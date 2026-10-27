@@ -43,6 +43,19 @@ class NbaGameFactoryTest {
     }
 
     @Test
+    void theScoreboardAloneProducesAScoreboardGame() {
+        ChessGame game = NbaGameFactory.create(GameConfig.builder().scoreboard().build());
+        assertEquals(ScoreboardGame.class, game.getClass());
+    }
+
+    @Test
+    void withEveryMechanicIncludingTheScoreboardItIsOutermost() {
+        ChessGame game = NbaGameFactory.create(
+                GameConfig.builder().shotClock().trade().hotHand().scoreboard().build());
+        assertEquals(ScoreboardGame.class, game.getClass());
+    }
+
+    @Test
     void shotClockListenersPassedToTheFactoryAreRegistered() {
         List<String> heard = new ArrayList<>();
         ChessGame game = NbaGameFactory.decorate(

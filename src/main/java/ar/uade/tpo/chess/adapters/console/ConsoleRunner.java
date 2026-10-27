@@ -5,12 +5,14 @@ import ar.uade.tpo.chess.adapters.nba.Franchise;
 import ar.uade.tpo.chess.adapters.nba.GameConfig;
 import ar.uade.tpo.chess.adapters.nba.NbaGameFactory;
 import ar.uade.tpo.chess.adapters.nba.NbaPieceTheme;
+import ar.uade.tpo.chess.adapters.nba.ScoreboardGame;
 import ar.uade.tpo.chess.adapters.nba.ShotClockGame;
 import ar.uade.tpo.chess.adapters.nba.ShotClockListener;
 import ar.uade.tpo.chess.adapters.nba.TradeAction;
 import ar.uade.tpo.chess.core.game.ChessGame;
 import ar.uade.tpo.chess.core.game.IllegalMoveException;
 import ar.uade.tpo.chess.core.game.PromotionRequiredException;
+import ar.uade.tpo.chess.core.model.GameStatus;
 import ar.uade.tpo.chess.core.model.Piece;
 import ar.uade.tpo.chess.core.model.PieceType;
 import ar.uade.tpo.chess.core.model.Team;
@@ -57,7 +59,7 @@ public final class ConsoleRunner {
     private boolean setup() {
         out.println("Choose a mode:");
         out.println("  1) Standard chess");
-        out.println("  2) NBA chess: all mechanics (shot clock, trade, hot hand)");
+        out.println("  2) NBA chess: all mechanics (shot clock, trade, hot hand, scoreboard)");
         out.println("  3) NBA chess: pick the mechanics");
         out.println("  4) NBA theme only (standard rules)");
         Integer choice = askNumber("Mode [1-4]: ", 1, 4);
@@ -66,7 +68,7 @@ public final class ConsoleRunner {
         }
         switch (choice) {
             case 1 -> config = GameConfig.standard();
-            case 2 -> config = GameConfig.builder().shotClock(askShotClockLimitOrDefault()).trade().hotHand().build();
+            case 2 -> config = GameConfig.builder().shotClock(askShotClockLimitOrDefault()).trade().hotHand().scoreboard().build();
             case 3 -> {
                 Optional<GameConfig> custom = askCustomConfig();
                 if (custom.isEmpty()) {
@@ -128,6 +130,13 @@ public final class ConsoleRunner {
         if (hotHand) {
             builder.hotHand();
         }
+        Boolean scoreboard = askYesNo("Enable the scoreboard (captures score points; a drawn game goes to the leader)? [y/n]: ");
+        if (scoreboard == null) {
+            return Optional.empty();
+        }
+        if (scoreboard) {
+            builder.scoreboard();
+        }
         return Optional.of(builder.build());
     }
 
@@ -178,6 +187,7 @@ public final class ConsoleRunner {
                 if (!announcedEnd) {
                     announcedEnd = true;
                 }
+                announceScoreboardVerdict();
                 out.println("The game is over. Type 'undo' to take back the last action, or 'quit' to leave.");
             }
             String line = prompt(promptText());
@@ -293,8 +303,27 @@ public final class ConsoleRunner {
                     + ", " + theme.teamName(Team.BLACK) + " "
                     + ShotClockGame.stateOf(game, Team.BLACK).movesWithoutProgress() + "/" + config.shotClockLimit());
         }
+        if (config.scoreboardEnabled()) {
+            out.println("SCOREBOARD  " + theme.teamName(Team.WHITE) + " " + ScoreboardGame.scoreOf(game, Team.WHITE)
+                    + " - " + ScoreboardGame.scoreOf(game, Team.BLACK) + " " + theme.teamName(Team.BLACK));
+        }
         if (!game.status().isOver() && game.isInCheck()) {
             out.println(theme.teamName(game.currentTurn()) + " is in check.");
+        }
+    }
+
+    private void announceScoreboardVerdict() {
+        if (!config.scoreboardEnabled()) {
+            return;
+        }
+        if (ScoreboardGame.decidedOnPoints(game)) {
+            Team leader = game.winner().orElseThrow();
+            out.println("*** Scoreboard decides the draw: " + theme.teamName(leader) + " wins "
+                    + ScoreboardGame.scoreOf(game, leader) + "-" + ScoreboardGame.scoreOf(game, leader.opposite())
+                    + " ***");
+        } else if (game.status().isDraw() && game.status() != GameStatus.DRAW_BY_AGREEMENT) {
+            out.println("The scoreboard is level (" + ScoreboardGame.scoreOf(game, Team.WHITE) + "-"
+                    + ScoreboardGame.scoreOf(game, Team.BLACK) + "): the draw stands.");
         }
     }
 

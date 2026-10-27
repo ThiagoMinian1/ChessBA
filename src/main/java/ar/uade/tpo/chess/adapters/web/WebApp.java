@@ -23,6 +23,7 @@ public final class WebApp {
         ChessGame game = NbaGameFactory.create(GameConfig.standard());
         GameConfig config = GameConfig.standard();
         String white = "Blancas", black = "Negras", mode = "standard";
+        boolean started;
     }
 
     public WebApp(int port) throws IOException {
@@ -61,7 +62,7 @@ public final class WebApp {
                 }
                 return;
             }
-            boolean mutation = !path.equals("/api/state") && !path.equals("/api/franchises");
+            boolean mutation = !path.equals("/api/state") && !path.equals("/api/franchises") && !path.equals("/api/result");
             if (!exchange.getRequestMethod().equals(mutation ? "POST" : "GET")) { send(exchange, 405, "application/json", json(Map.of("error", "Método no permitido"))); return; }
             String origin = exchange.getRequestHeaders().getFirst("Origin");
             if (mutation && origin != null && !origin.equals("http://" + exchange.getRequestHeaders().getFirst("Host"))) {
@@ -83,6 +84,12 @@ public final class WebApp {
                 }
                 switch (path) {
                     case "/api/state" -> { }
+                    case "/api/result" -> {
+                        if (!session.game.status().isOver()) {
+                            send(exchange, 409, "application/json", json(Map.of("error", "La partida todavía no terminó."))); return;
+                        }
+                        send(exchange, 200, "application/json", json(gameResult(session.game, session.config.scoreboardEnabled(), session.white, session.black))); return;
+                    }
                     case "/api/new" -> newGame(session, params);
                     case "/api/move" -> session.game.play(Position.of(params.get("from")), Position.of(params.get("to")), params.containsKey("promotion") ? PieceType.valueOf(params.get("promotion")) : null);
                     case "/api/undo" -> session.game.undo();
@@ -95,6 +102,7 @@ public final class WebApp {
                     }
                     default -> { send(exchange, 404, "application/json", json(Map.of("error", "Ruta no encontrada"))); return; }
                 }
+                if (mutation && !session.game.history().isEmpty()) session.started = true;
                 send(exchange, 200, "application/json", json(state(session)));
             }
         } catch (IllegalArgumentException | IllegalStateException | ar.uade.tpo.chess.core.game.IllegalMoveException ex) {
@@ -121,9 +129,11 @@ public final class WebApp {
 
     private void newGame(Session s, Map<String, String> p) {
         String mode = p.getOrDefault("mode", "standard");
-        if (!List.of("standard", "nba", "custom").contains(mode)) throw new IllegalArgumentException("Modo inválido");
-        GameConfig config = mode.equals("nba") ? GameConfig.builder().shotClock().trade().hotHand().build()
-                : mode.equals("custom") ? new GameConfig(Boolean.parseBoolean(p.get("shotClock")), Integer.parseInt(p.getOrDefault("limit", "10")), Boolean.parseBoolean(p.get("trade")), Boolean.parseBoolean(p.get("hotHand"))) : GameConfig.standard();
+        if (!List.of("standard", "nba", "custom", "theme").contains(mode)) throw new IllegalArgumentException("Modo inválido");
+        int limit = mode.equals("standard") || mode.equals("theme") ? GameConfig.DEFAULT_SHOT_CLOCK_LIMIT : Integer.parseInt(p.getOrDefault("limit", "10"));
+        if (limit < 1 || limit > 24) throw new IllegalArgumentException("El límite del shot clock debe estar entre 1 y 24.");
+        GameConfig config = mode.equals("nba") ? GameConfig.builder().shotClock(limit).trade().hotHand().scoreboard().build()
+                : mode.equals("custom") ? new GameConfig(Boolean.parseBoolean(p.get("shotClock")), limit, Boolean.parseBoolean(p.get("trade")), Boolean.parseBoolean(p.get("hotHand")), Boolean.parseBoolean(p.get("scoreboard"))) : GameConfig.standard();
         String white = "Blancas", black = "Negras";
         if (!mode.equals("standard")) {
             Franchise w = Franchise.find(p.getOrDefault("white", "LAL")).orElseThrow(() -> new IllegalArgumentException("Franquicia inválida"));
@@ -132,6 +142,7 @@ public final class WebApp {
             white = w.displayName(); black = b.displayName();
         }
         s.game = NbaGameFactory.create(config); s.config = config; s.mode = mode; s.white = white; s.black = black;
+        s.started = true;
     }
 
     private Map<String, Object> state(Session s) {
@@ -142,17 +153,62 @@ public final class WebApp {
         result.put("turn", g.currentTurn().name()); result.put("status", g.status().name());
         result.put("winner", g.winner().map(Enum::name).orElse("")); result.put("check", !g.status().isOver() && g.isInCheck());
         result.put("history", g.history()); result.put("canUndo", g.canUndo()); result.put("canRedo", g.canRedo());
+        result.put("halfmoveClock", g.halfmoveClock());
         result.put("mode", s.mode); result.put("white", s.white); result.put("black", s.black);
+        result.put("started", s.started);
+        result.put("scoreboard", s.config.scoreboardEnabled());
+        result.put("decidedOnPoints", ScoreboardGame.decidedOnPoints(g));
+        result.put("result", gameResult(g, s.config.scoreboardEnabled(), s.white, s.black));
         result.put("shotClock", s.config.shotClockEnabled()); result.put("limit", s.config.shotClockLimit());
         result.put("trade", s.config.tradeEnabled()); result.put("hotHand", s.config.hotHandEnabled());
         for (Team team : Team.values()) {
             String key = team == Team.WHITE ? "white" : "black";
+            result.put(key + "Score", ScoreboardGame.scoreOf(g, team));
             result.put(key + "Bench", g.bench(team).stream().map(p -> p.type().name()).toList());
             result.put(key + "Clock", ShotClockGame.stateOf(g, team).movesWithoutProgress());
+            result.put(key + "ClockExpired", ShotClockGame.stateOf(g, team).isExpired());
             result.put(key + "Streak", HotHandGame.streakOf(g, team));
             result.put(key + "Traded", TradeAction.hasTraded(g, team));
         }
         return result;
+    }
+
+    static Map<String, Object> gameResult(ChessGame g, boolean scoreboard, String white, String black) {
+        if (!g.status().isOver()) return null;
+        boolean onPoints = ScoreboardGame.decidedOnPoints(g);
+        String reason = onPoints ? "Victoria por puntos tras " + drawReason(g.status()) : switch (g.status()) {
+            case CHECKMATE -> "Jaque mate";
+            case RESIGNATION -> "Rendición";
+            default -> drawReason(g.status());
+        };
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("status", g.status().name());
+        summary.put("winner", g.winner().map(Enum::name).orElse(""));
+        summary.put("winnerName", g.winner().map(t -> t == Team.WHITE ? white : black).orElse(""));
+        summary.put("reason", reason);
+        summary.put("decidedOnPoints", onPoints);
+        summary.put("scoreboard", scoreboard);
+        summary.put("white", white); summary.put("black", black);
+        summary.put("whiteScore", ScoreboardGame.scoreOf(g, Team.WHITE));
+        summary.put("blackScore", ScoreboardGame.scoreOf(g, Team.BLACK));
+        summary.put("actions", g.history().size());
+        summary.put("whitePieces", g.board().pieces(Team.WHITE).size());
+        summary.put("blackPieces", g.board().pieces(Team.BLACK).size());
+        summary.put("whiteBench", g.bench(Team.WHITE).size());
+        summary.put("blackBench", g.bench(Team.BLACK).size());
+        summary.put("outcome", g.winner().map(t -> t == Team.WHITE ? "1–0" : "0–1").orElse("½–½"));
+        return summary;
+    }
+
+    private static String drawReason(ar.uade.tpo.chess.core.model.GameStatus status) {
+        return switch (status) {
+            case STALEMATE -> "ahogado";
+            case DRAW_THREEFOLD_REPETITION -> "triple repetición";
+            case DRAW_FIFTY_MOVE_RULE -> "regla de los 50 movimientos";
+            case DRAW_INSUFFICIENT_MATERIAL -> "material insuficiente";
+            case DRAW_BY_AGREEMENT -> "tablas de común acuerdo";
+            default -> status.name();
+        };
     }
 
     private static String decode(String value) { return URLDecoder.decode(value, StandardCharsets.UTF_8); }
@@ -162,7 +218,7 @@ public final class WebApp {
         e.getResponseHeaders().set("Content-Type", type + "; charset=utf-8");
         e.getResponseHeaders().set("Cache-Control", "no-store");
         e.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
-        e.getResponseHeaders().set("Content-Security-Policy", "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; frame-ancestors 'none'");
+        e.getResponseHeaders().set("Content-Security-Policy", "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data: https://cdn.nba.com; frame-ancestors 'none'");
         e.sendResponseHeaders(status, bytes.length); e.getResponseBody().write(bytes);
     }
 

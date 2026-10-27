@@ -207,14 +207,14 @@ class ConsoleRunnerTest {
 
     @Test
     void customModeOnlyEnablesWhatWasAnsweredYesTo() {
-        String output = run("3", "y", "5", "y", "n", "lakers", "celtics", "help", "quit");
+        String output = run("3", "y", "5", "y", "n", "n", "lakers", "celtics", "help", "quit");
         assertContains(output, "/5");
         assertContains(output, "trade e4 q");
     }
 
     @Test
     void customModeWithEverythingOffIsStandardChess() {
-        String output = run("3", "n", "n", "n", "lakers", "celtics", "trade e2 p", "quit");
+        String output = run("3", "n", "n", "n", "n", "lakers", "celtics", "trade e2 p", "quit");
         assertFalse(output.contains("Shot clock ("));
         assertContains(output, "The trade is not enabled in this game.");
     }
@@ -238,6 +238,31 @@ class ConsoleRunnerTest {
         String output = run("2", "", "lakers", "celtics",
                 "e2 e4", "d7 d5", "e4 d5", "d8 d5", "b1 c3", "d5 g2", "g2 h1", "c3 e4", "quit");
         assertContains(output, "Boston Celtics moves again");
+    }
+
+    @Test
+    void theScoreboardShowsPointsForCapturesAndIsOnlyThereWhenEnabled() {
+        String on = run("2", "", "lakers", "celtics", "e2 e4", "d7 d5", "e4 d5", "quit");
+        assertContains(on, "SCOREBOARD  Los Angeles Lakers 0 - 0 Boston Celtics");
+        assertContains(on, "SCOREBOARD  Los Angeles Lakers 1 - 0 Boston Celtics");
+        String off = run("4", "lakers", "celtics", "e2 e4", "d7 d5", "e4 d5", "quit");
+        assertFalse(off.contains("SCOREBOARD"));
+    }
+
+    @Test
+    void customModeCanEnableOnlyTheScoreboard() {
+        String output = run("3", "n", "n", "n", "y", "lakers", "celtics", "e2 e4", "d7 d5", "e4 d5", "quit");
+        assertContains(output, "SCOREBOARD  Los Angeles Lakers 1 - 0 Boston Celtics");
+        assertFalse(output.contains("Shot clock ("));
+    }
+
+    @Test
+    void aDrawnGameIsAnnouncedAsWonOnPointsOrAsLevel() {
+        // Both sides shuffle knights: threefold repetition with no captures -> the scoreboard is level.
+        String output = run("3", "n", "n", "n", "y", "lakers", "celtics",
+                "g1 f3", "g8 f6", "f3 g1", "f6 g8", "g1 f3", "g8 f6", "f3 g1", "f6 g8", "quit");
+        assertContains(output, "Draw by threefold repetition");
+        assertContains(output, "The scoreboard is level (0-0): the draw stands.");
     }
 
     @Test

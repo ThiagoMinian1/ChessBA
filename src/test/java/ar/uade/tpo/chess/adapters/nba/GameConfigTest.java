@@ -20,6 +20,17 @@ class GameConfigTest {
     }
 
     @Test
+    void theScoreboardIsIndependentAndOffByDefault() {
+        assertFalse(GameConfig.standard().scoreboardEnabled());
+        GameConfig scoreboard = GameConfig.builder().scoreboard().build();
+        assertTrue(scoreboard.scoreboardEnabled());
+        assertFalse(scoreboard.shotClockEnabled());
+        assertFalse(scoreboard.tradeEnabled());
+        assertFalse(scoreboard.hotHandEnabled());
+        assertFalse(scoreboard.isStandardChess());
+    }
+
+    @Test
     void theDefaultShotClockLimitIsTen() {
         assertEquals(10, GameConfig.DEFAULT_SHOT_CLOCK_LIMIT);
         assertEquals(10, GameConfig.builder().shotClock().build().shotClockLimit());
@@ -58,7 +69,7 @@ class GameConfigTest {
     void theShotClockLimitMustBePositive() {
         assertThrows(IllegalArgumentException.class, () -> GameConfig.builder().shotClock(0).build());
         assertThrows(IllegalArgumentException.class, () -> GameConfig.builder().shotClock(-1).build());
-        assertThrows(IllegalArgumentException.class, () -> new GameConfig(false, 0, false, false));
+        assertThrows(IllegalArgumentException.class, () -> new GameConfig(false, 0, false, false, false));
     }
 
     @Test

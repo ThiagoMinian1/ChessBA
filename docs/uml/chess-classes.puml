@@ -127,7 +127,7 @@ package "adapters" {
 package "adapters.nba" {
   enum Franchise { 30 franchises\n+find(String): Optional<Franchise> }
   class NbaPieceTheme { +franchiseOf(Team): Franchise }
-  class GameConfig <<record>> { +shotClockEnabled\n+shotClockLimit\n+tradeEnabled\n+hotHandEnabled\n+builder() }
+  class GameConfig <<record>> { +shotClockEnabled\n+shotClockLimit\n+tradeEnabled\n+hotHandEnabled\n+scoreboardEnabled\n+builder() }
   class "GameConfig.Builder" as GameConfigBuilder <<builder>>
   class NbaGameFactory <<factory>> { +create(config, listeners...): ChessGame\n+decorate(base, config, listeners...) }
 
@@ -143,6 +143,10 @@ package "adapters.nba" {
   class HotHandGame <<decorator>> { +STREAK_TO_IGNITE = 2 }
   class HotHandAction <<decorator>>
   class Streaks <<record>>
+
+  class ScoreboardGame <<decorator>> { +scoreOf(game, team): int\n+decidedOnPoints(game): boolean }
+  class ScoreboardAction <<decorator>>
+  class Scores <<record>>
 
   class TradeAction <<command>> { +TradeAction(square, benchPiece) }
   class TradeLedger <<record>>
@@ -260,6 +264,11 @@ ShotClockState <|.. SCWarning
 ShotClockState <|.. SCExpired
 HotHandAction ..> Streaks
 TradeAction ..> TradeLedger
+GameDecorator <|-- ScoreboardGame
+TurnAction <|.. ScoreboardAction
+ScoreboardAction o-- TurnAction : inner
+ScoreboardGame ..> ScoreboardAction : wraps each action
+ScoreboardAction ..> Scores
 TradeAction ..> PieceType
 
 GameConfig +-- GameConfigBuilder
@@ -267,6 +276,7 @@ NbaGameFactory ..> GameConfig
 NbaGameFactory ..> Game
 NbaGameFactory ..> ShotClockGame
 NbaGameFactory ..> HotHandGame
+NbaGameFactory ..> ScoreboardGame
 
 ConsoleApp ..> ConsoleRunner
 ConsoleRunner ..> ChessGame

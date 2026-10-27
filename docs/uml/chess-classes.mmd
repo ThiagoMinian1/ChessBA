@@ -98,6 +98,9 @@ namespace adapters_nba {
   class HotHandGame { <<Decorator>> }
   class HotHandAction { <<Decorator>> }
   class Streaks { <<record>> }
+  class ScoreboardGame { <<Decorator>> scoreOf() decidedOnPoints() }
+  class ScoreboardAction { <<Decorator>> }
+  class Scores { <<record>> }
   class TradeAction { <<Command>> }
   class TradeLedger { <<record>> }
 }
@@ -193,10 +196,16 @@ ShotClockState <|.. ShotClockStateWarning
 ShotClockState <|.. ShotClockStateExpired
 HotHandAction ..> Streaks
 TradeAction ..> TradeLedger
+GameDecorator <|-- ScoreboardGame
+TurnAction <|.. ScoreboardAction
+ScoreboardAction o-- TurnAction : inner
+ScoreboardGame ..> ScoreboardAction
+ScoreboardAction ..> Scores
 NbaGameFactory ..> GameConfig
 NbaGameFactory ..> Game
 NbaGameFactory ..> ShotClockGame
 NbaGameFactory ..> HotHandGame
+NbaGameFactory ..> ScoreboardGame
 ConsoleApp ..> ConsoleRunner
 ConsoleRunner ..> ChessGame
 ConsoleRunner ..> CommandParser

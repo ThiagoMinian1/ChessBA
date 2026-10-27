@@ -11,6 +11,9 @@ import ar.uade.tpo.chess.core.game.Game;
  * is evaluated first and the clock second, and the core then passes the turn. The two cooperate whichever
  * order they run in (a skipped turn already keeps the move with the same team, so no extra move is granted).
  *
+ * <p>The scoreboard is outermost; it only adds points after captures and decides drawn games, so it works the
+ * same in any position of the stack.
+ *
  * <p>The trade is not a decorator: it is a {@link TradeAction} that the front end submits when the config
  * enables it, so there is nothing to wrap.
  */
@@ -35,6 +38,9 @@ public final class NbaGameFactory {
         }
         if (config.hotHandEnabled()) {
             game = new HotHandGame(game);
+        }
+        if (config.scoreboardEnabled()) {
+            game = new ScoreboardGame(game);
         }
         return game;
     }

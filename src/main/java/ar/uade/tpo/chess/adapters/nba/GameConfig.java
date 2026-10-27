@@ -5,9 +5,11 @@ package ar.uade.tpo.chess.adapters.nba;
  * standard chess. Immutable; build with {@link #builder()}.
  *
  * <p>Each flag maps to one mechanic that lives entirely in this adapter package:
- * the shot clock ({@link ShotClockGame}), the trade ({@link TradeAction}) and the hot hand ({@link HotHandGame}).
+ * the shot clock ({@link ShotClockGame}), the trade ({@link TradeAction}), the hot hand ({@link HotHandGame})
+ * and the scoreboard ({@link ScoreboardGame}).
  */
-public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean tradeEnabled, boolean hotHandEnabled) {
+public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean tradeEnabled, boolean hotHandEnabled,
+                         boolean scoreboardEnabled) {
 
     /** Own moves without capturing or advancing a pawn before a team loses its turn. */
     public static final int DEFAULT_SHOT_CLOCK_LIMIT = 10;
@@ -20,7 +22,7 @@ public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean t
 
     /** No mechanics: standard chess. */
     public static GameConfig standard() {
-        return new GameConfig(false, DEFAULT_SHOT_CLOCK_LIMIT, false, false);
+        return new GameConfig(false, DEFAULT_SHOT_CLOCK_LIMIT, false, false, false);
     }
 
     public static Builder builder() {
@@ -28,7 +30,7 @@ public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean t
     }
 
     public boolean isStandardChess() {
-        return !shotClockEnabled && !tradeEnabled && !hotHandEnabled;
+        return !shotClockEnabled && !tradeEnabled && !hotHandEnabled && !scoreboardEnabled;
     }
 
     public static final class Builder {
@@ -37,6 +39,7 @@ public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean t
         private int shotClockLimit = DEFAULT_SHOT_CLOCK_LIMIT;
         private boolean tradeEnabled;
         private boolean hotHandEnabled;
+        private boolean scoreboardEnabled;
 
         private Builder() {
         }
@@ -61,8 +64,13 @@ public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean t
             return this;
         }
 
+        public Builder scoreboard() {
+            this.scoreboardEnabled = true;
+            return this;
+        }
+
         public GameConfig build() {
-            return new GameConfig(shotClockEnabled, shotClockLimit, tradeEnabled, hotHandEnabled);
+            return new GameConfig(shotClockEnabled, shotClockLimit, tradeEnabled, hotHandEnabled, scoreboardEnabled);
         }
     }
 }
