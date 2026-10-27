@@ -1,37 +1,22 @@
 package ar.uade.tpo.chess.core.model;
 
+import java.util.Objects;
+import java.util.Optional;
+
 /**
- * One cell of the board: a fixed position plus whichever piece currently
- * sits there (possibly none). Mutation is package-private — only
- * {@link Board} is allowed to change what is on a square.
+ * Read-only view of one cell of the board: where it is ({@link Position}) and what, if anything, stands on it.
  */
-public final class Square {
+public record Square(Position position, Piece piece) {
 
-    private final Position position;
-    private Piece piece;
-
-    Square(Position position, Piece piece) {
-        this.position = position;
-        this.piece = piece;
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-
-    public Piece getPiece() {
-        return piece;
+    public Square {
+        Objects.requireNonNull(position, "position");
     }
 
     public boolean isEmpty() {
         return piece == null;
     }
 
-    public boolean isOccupiedBy(Team team) {
-        return piece != null && piece.getTeam() == team;
-    }
-
-    void setPiece(Piece piece) {
-        this.piece = piece;
+    public Optional<Piece> occupant() {
+        return Optional.ofNullable(piece);
     }
 }

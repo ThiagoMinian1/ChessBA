@@ -1,62 +1,85 @@
 package ar.uade.tpo.chess.core.rules;
 
 import ar.uade.tpo.chess.core.model.Board;
-import ar.uade.tpo.chess.core.model.Pawn;
+import ar.uade.tpo.chess.core.model.Move;
 import ar.uade.tpo.chess.core.model.Piece;
+import ar.uade.tpo.chess.core.model.PieceType;
 import ar.uade.tpo.chess.core.model.Position;
-import ar.uade.tpo.chess.core.model.Square;
+import ar.uade.tpo.chess.core.model.Team;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Forward moves (one or, from the starting row, two squares) require the
- * path to be empty; diagonal moves are only legal as a capture. Promotion
- * and en passant are out of scope for now.
+ * Pawn: advances one square (two from its starting rank, if both are empty), captures one square diagonally
+ * forward, may capture en passant, and promotes on the last rank. Each promotion is generated as four moves,
+ * one per allowed target piece.
  */
 public final class PawnMoveRule implements MoveRule {
 
+    private static final PieceType[] PROMOTION_TARGETS = {
+        PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT
+    };
+
     @Override
-    public List<Position> possibleMoves(Position from, Board board) {
-        List<Position> moves = new ArrayList<>();
-        Piece piece = board.pieceAt(from);
-        if (!(piece instanceof Pawn pawn)) {
+    public List<Move> pseudoLegalMoves(MoveContext context, Position from, Piece piece) {
+        Board board = context.board();
+        Team team = piece.team();
+        List<Move> moves = new ArrayList<>();
+
+        int nextRank = from.rank() + team.forward();
+        if (!Position.inBounds(from.file(), nextRank)) {
             return moves;
         }
+        boolean promoting = nextRank == team.promotionRank();
 
-        int direction = pawn.forwardDirection();
-        int oneStepRow = from.row() + direction;
-
-        if (Position.isInRange(oneStepRow, from.column())) {
-            Position oneStep = new Position(oneStepRow, from.column());
-            if (board.isEmpty(oneStep)) {
-                moves.add(oneStep);
-
-                int twoStepRow = from.row() + 2 * direction;
-                if (from.row() == pawn.startingRow() && Position.isInRange(twoStepRow, from.column())) {
-                    Position twoStep = new Position(twoStepRow, from.column());
-                    if (board.isEmpty(twoStep)) {
-                        moves.add(twoStep);
-                    }
+        Position oneStep = new Position(from.file(), nextRank);
+        if (board.isEmpty(oneStep)) {
+            addAdvance(moves, from, oneStep, promoting);
+            if (from.rank() == team.pawnStartRank()) {
+                Position twoSteps = new Position(from.file(), from.rank() + 2 * team.forward());
+                if (board.isEmpty(twoSteps)) {
+                    moves.add(Move.doublePush(from, twoSteps));
                 }
             }
         }
 
-        addDiagonalCaptureIfAny(moves, from, oneStepRow, from.column() - 1, piece, board);
-        addDiagonalCaptureIfAny(moves, from, oneStepRow, from.column() + 1, piece, board);
-
+        for (int fileStep : new int[] {-1, 1}) {
+            Optional<Position> target = from.offset(fileStep, team.forward());
+            if (target.isEmpty()) {
+                continue;
+            }
+            Optional<Piece> occupant = board.pieceAt(target.get());
+            if (occupant.isPresent()) {
+                if (occupant.get().team() != team) {
+                    addAdvance(moves, from, target.get(), promoting);
+                }
+            } else if (isEnPassantAvailable(context, from, target.get(), team)) {
+                moves.add(Move.enPassant(from, target.get()));
+            }
+        }
         return moves;
     }
 
-    private void addDiagonalCaptureIfAny(
-            List<Position> moves, Position from, int row, int column, Piece pawn, Board board) {
-        if (!Position.isInRange(row, column)) {
-            return;
+    private boolean isEnPassantAvailable(MoveContext context, Position from, Position target, Team team) {
+        if (context.enPassantTarget().filter(target::equals).isEmpty()) {
+            return false;
         }
-        Position candidate = new Position(row, column);
-        Square square = board.squareAt(candidate);
-        if (!square.isEmpty() && !square.getPiece().isSameTeam(pawn)) {
-            moves.add(candidate);
+        // The pawn to be captured stands beside this pawn, on the target's file.
+        Position victimPosition = new Position(target.file(), from.rank());
+        return context.board().pieceAt(victimPosition)
+                .filter(p -> p.type() == PieceType.PAWN && p.team() != team)
+                .isPresent();
+    }
+
+    private void addAdvance(List<Move> moves, Position from, Position to, boolean promoting) {
+        if (promoting) {
+            for (PieceType target : PROMOTION_TARGETS) {
+                moves.add(Move.promotion(from, to, target));
+            }
+        } else {
+            moves.add(Move.normal(from, to));
         }
     }
 }
