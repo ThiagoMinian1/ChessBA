@@ -1,18 +1,22 @@
 package ar.uade.tpo.chess.core.rules;
 
-import ar.uade.tpo.chess.core.model.Board;
+import ar.uade.tpo.chess.core.model.Move;
+import ar.uade.tpo.chess.core.model.Piece;
 import ar.uade.tpo.chess.core.model.Position;
 
 import java.util.List;
 
 /**
- * Strategy for computing where a piece could move to, given only the
- * board and its own movement pattern. Results are <b>pseudo-legal</b>:
- * they never land on a square held by the same team, but they do not
- * check whether the move would leave the mover's own king in check —
- * that filtering is {@code Game}'s responsibility, so a new piece type
- * only ever needs a new {@code MoveRule}, nothing else changes.
+ * Strategy: how one kind of piece moves. A rule only produces <em>pseudo-legal</em> moves, i.e. moves that
+ * respect the piece's own geometry and blocking, but that may still leave the mover's own king in check.
+ * Filtering those out is the job of {@link MoveGenerator}, so every rule stays small and independent.
  */
 public interface MoveRule {
-    List<Position> possibleMoves(Position from, Board board);
+
+    /**
+     * @param context the board (and en passant target) to move on
+     * @param from    where the piece currently stands
+     * @param piece   the piece to move; its team decides direction and what counts as a capture
+     */
+    List<Move> pseudoLegalMoves(MoveContext context, Position from, Piece piece);
 }

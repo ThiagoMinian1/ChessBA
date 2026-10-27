@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <title>ChessBA — Tu próxima gran jugada</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23ff7849'/%3E%3Ctext x='32' y='47' text-anchor='middle' font-size='46'%3E♞%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="brand" href="/" aria-label="ChessBA, inicio"><span class="brand-emblem" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M11 29c0-6 3-9 8-12l-3-3-4 5-5-2 2-5 7-6 1-4 5 4c9 1 12 10 8 23Z"/><path d="M9 30h23v5H9z"/><circle cx="23" cy="12" r="1.2"/></svg></span><span class="brand-name">Chess<span>BA</span></span></a>
+  <nav>
+    <button class="nav-item active" id="playNav" aria-label="Sala de juego"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16M4 12h16"/></svg><span>Jugar</span></button>
+    <button class="nav-item" id="rulesOpen" aria-label="Aprender a jugar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5c4-1 6 0 9 2 3-2 5-3 9-2v14c-4-1-6 0-9 2-3-2-5-3-9-2zM12 7v14"/></svg><span>Aprender</span></button>
+  </nav>
+  <div class="sidebar-bottom"><span class="rail-ball" aria-hidden="true"></span><span>Ajedrez + NBA</span></div>
+</aside>
+<div class="page">
+<header class="app-header"><div class="header-title"><span class="header-overline">ChessBA</span><span class="header-separator"></span><span class="header-caption">Juego local</span></div><div class="connection" id="connection"><i></i> Conectando</div></header>
+<main>
+  <section class="heading"><div><h1>Sala de juego</h1><p>Jugá con otra persona en este dispositivo.</p></div><button class="primary" id="newOpen"><span>＋</span> Nueva partida</button></section>
+  <div class="workspace">
+    <section class="board-column" aria-label="Tablero de ajedrez">
+      <div class="board-stage">
+        <div class="stage-topline"><span class="stage-label"><i></i> <span id="arenaBadge">PARTIDA LOCAL</span></span><span class="stage-edition">Ajedrez × NBA</span></div>
+        <section class="match-card" aria-label="Equipos de la partida"><div class="match-team" id="matchWhite"></div><div class="match-divider"><span>VS</span><small id="matchAction">A JUGAR</small></div><div class="match-team away" id="matchBlack"></div></section>
+        <div class="board-frame"><div id="board" class="board" role="group" aria-label="Tablero interactivo"></div><div id="playMoment" class="play-moment" aria-hidden="true" hidden></div></div>
+        <div class="board-toolbar"><span id="boardHint">Seleccioná una pieza para empezar</span><div class="board-tools"><button class="skin-toggle" id="jerseyToggle" aria-pressed="false" hidden title="Alternar piezas clásicas y camisetas">Camisetas</button><button class="icon-button" id="flip" title="Girar tablero" aria-label="Girar tablero">⇅</button><button class="icon-button" id="effectsToggle" aria-pressed="true" aria-label="Desactivar efectos visuales" title="Efectos visuales">✧</button><button class="icon-button" id="sound" aria-label="Silenciar sonidos" aria-pressed="true">♫</button></div></div>
+      </div>
+      <section class="learn-guide" id="learnGuide" aria-live="polite"><div id="learnIcon" class="learn-icon"></div><div><span id="learnBadge" class="eyebrow">Una mano para empezar</span><h3 id="learnTitle">¿Es tu primera partida?</h3><p id="learnText">Seleccioná una pieza y te mostramos dónde puede ir.</p></div><button class="help-link" id="learnRules">Ver reglas ↗</button></section>
+    </section>
+    <div class="right-column">
+      <aside class="game-panel" aria-label="Estado e historial de la partida">
+        <div class="panel-heading"><span class="eyebrow">La partida</span><span class="mode-pill" id="modePill">CLÁSICO</span></div>
+        <div class="game-state"><h2 id="turnTitle">Preparando partida</h2><p class="turn-copy" id="turnCopy">Un momento. Estamos preparando el tablero.</p><div class="turn-indicator" id="turnIndicator"></div></div>
+        <div class="panel-tabs"><button class="selected" data-tab="history">Jugadas <span id="moveCount">0</span></button><button data-tab="bench">Banco <span id="benchCount">0</span></button></div>
+        <section id="historyTab"><div class="history-head"><span>#</span><span>MOVIMIENTO</span></div><div id="history" class="history"></div></section>
+        <section id="benchTab" hidden><p class="bench-description">Piezas disponibles en el banco de cada equipo.</p><div id="bench"></div><p id="tradeHint" class="bench-description"></p></section>
+        <div class="history-controls"><button id="undo" aria-label="Deshacer última jugada">↶ <span>Deshacer</span></button><button id="redo" aria-label="Rehacer jugada">↷ <span>Rehacer</span></button></div>
+        <div class="game-actions"><button id="draw">½ Proponer tablas</button><button id="resign">⚑ Rendirse</button></div>
+      </aside>
+      <section id="mechanics" class="mechanics" aria-label="Mecánicas NBA"></section>
+      <div class="roster-legend" id="rosterLegend" hidden><span>FP <b>Rey</b></span><span>PG <b>Dama</b></span><span>C <b>Torre</b></span><span>SF <b>Alfil</b></span><span>SG <b>Caballo</b></span><span>RK <b>Peón</b></span></div>
+      <button class="nba-cta" id="nbaQuick"><span class="cta-ball" aria-hidden="true"></span><span><strong>Jugar con equipos NBA</strong><span>Elegí tus franquicias y las reglas de la partida.</span></span><b>↗</b></button>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<dialog id="newDialog"><form id="newForm"><div class="dialog-head"><div class="eyebrow">Configurar partida</div><button type="button" class="close" data-close aria-label="Cerrar">×</button></div><h2>Nueva partida</h2><p>Elegí cómo querés jugar. Compartí el tablero con alguien.</p><div class="mode-options"><label><input type="radio" name="mode" value="standard" checked><span><b>♞</b><strong>Clásico</strong><small>Ajedrez, en su esencia.</small></span></label><label><input type="radio" name="mode" value="nba"><span><b>◉</b><strong>NBA completo</strong><small>Franquicias, rachas e intercambios.</small></span></label><label><input type="radio" name="mode" value="custom"><span><b>✧</b><strong>A tu manera</strong><small>Elegí tus mecánicas NBA.</small></span></label></div><div id="nbaOptions" hidden><div class="team-preview"><div id="whitePreview" class="preview-team"></div><span>VS</span><div id="blackPreview" class="preview-team"></div></div><div class="team-selects"><label>BLANCAS<select name="white" id="whiteFranchise"></select></label><label>NEGRAS<select name="black" id="blackFranchise"></select></label></div><div id="customOptions" hidden><label class="toggle"><input type="checkbox" name="shotClock" checked> Shot clock <small>Límite de jugadas sin progreso</small></label><label class="limit-label">Límite <input type="number" name="limit" value="10" min="1" max="200"></label><label class="toggle"><input type="checkbox" name="hotHand" checked> Hot hand <small>Dos capturas propias seguidas dan una jugada extra</small></label><label class="toggle"><input type="checkbox" name="trade" checked> Intercambios <small>Un cambio desde el banco por equipo</small></label></div></div><p class="form-error" id="newError" role="alert"></p><div class="dialog-footer"><span>La partida actual se reemplazará.</span><button class="primary" type="submit">A jugar <span>↗</span></button></div></form></dialog>
+<dialog id="promotionDialog"><div class="eyebrow">Promoción</div><h2>Elegí tu nueva pieza.</h2><p>Tu peón llegó a la última fila.</p><div id="promotionChoices" class="promotion-choices"></div></dialog>
+<dialog id="confirmDialog"><div class="eyebrow">LA PARTIDA</div><h2 id="confirmTitle"></h2><p id="confirmCopy"></p><div class="dialog-footer"><button class="secondary" id="confirmCancel">Seguir jugando</button><button class="primary" id="confirmAccept">Confirmar</button></div></dialog>
+<dialog id="rulesDialog"><div class="dialog-head"><div class="eyebrow">Cómo jugar</div><button class="close" data-close aria-label="Cerrar">×</button></div><h2>Tu primera jugada.</h2><div class="rule-card"><b>El objetivo: atrapar al rey</b><p>En cada turno movés una pieza. Capturás una rival al ocupar su casilla. Jaque significa que el rey está amenazado; jaque mate significa que no tiene ninguna forma de escapar. Ahí ganás.</p></div><div class="rule-card"><b>Conocé tus piezas</b><p>Peón: avanza de a una, captura en diagonal. Torre: líneas rectas. Alfil: diagonales. Dama: rectas y diagonales. Caballo: en L y puede saltar. Rey: una casilla en cualquier dirección. Seleccioná una pieza del tablero para ver su explicación.</p></div><p>Jugá con otra persona en este dispositivo. Elegí una pieza de tu equipo y después una casilla marcada. El objetivo es dar jaque mate al rey rival.</p><div class="rule-card"><b>01 · El clásico</b><p>Los turnos se alternan. Podés enrocar, capturar al paso y promover tus peones cuando las reglas lo permitan. Si querés volver a una posición anterior, usá Deshacer.</p></div><div class="rule-card"><b>02 · La cancha NBA</b><p>Shot clock: capturá o mové un peón antes del límite de jugadas propias para evitar perder un turno. Hot hand: dos capturas propias consecutivas pueden darte otra jugada.</p></div><div class="rule-card"><b>03 · El banco</b><p>Con intercambios activos, seleccioná una pieza propia del tablero y luego una de tu banco para reemplazarla. Una vez por equipo; no se puede cambiar al rey ni hacerlo en jaque.</p></div><p class="muted">Las partidas viven en memoria mientras el servidor está encendido. Cada navegador tiene su propia partida.</p></dialog>
+</body></html>

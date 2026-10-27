@@ -1,0 +1,281 @@
+@startuml chess-classes
+title Chess TPO - class diagram (core / ports / adapters)
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+' =====================================================================================
+' PORTS  (interfaces owned by the core; implemented by adapters)
+' =====================================================================================
+package "ports" {
+  interface GameObserver <<port>> {
+    +onMovePlayed(team, move, piece)
+    +onPieceCaptured(capturer, captured, at)
+    +onPiecePromoted(team, at, promotedTo)
+    +onCheck(checkedTeam)
+    +onGameEnded(status, winner)
+    +onNotice(message)
+  }
+  interface PieceTheme <<port>> {
+    +teamName(team): String
+    +pieceName(type, team): String
+    +icon(type, team): String
+  }
+}
+
+' =====================================================================================
+' CORE
+' =====================================================================================
+package "core.model" {
+  enum Team { WHITE\nBLACK\n+opposite()\n+forward() }
+  enum PieceType { KING\nQUEEN\nROOK\nBISHOP\nKNIGHT\nPAWN\n+isPromotionTarget() }
+  enum MoveType { NORMAL\nPAWN_DOUBLE_PUSH\nEN_PASSANT\nCASTLE_KINGSIDE\nCASTLE_QUEENSIDE\nPROMOTION }
+  enum GameStatus { ONGOING\nCHECKMATE\nSTALEMATE\nDRAW_THREEFOLD_REPETITION\nDRAW_FIFTY_MOVE_RULE\nDRAW_INSUFFICIENT_MATERIAL\nDRAW_BY_AGREEMENT\nRESIGNATION }
+  class Position <<record>> { +file: int\n+rank: int\n+of(String): Position }
+  class Move <<record>> { +from: Position\n+to: Position\n+type: MoveType\n+promotion: PieceType }
+  class Square <<record>> { +position: Position\n+piece: Piece }
+  class PlacedPiece <<record>> { +position: Position\n+piece: Piece }
+  abstract class Piece {
+    -team: Team
+    -moved: boolean
+    +{abstract} type(): PieceType
+    +{abstract} withMoved(boolean): Piece
+    +{abstract} materialValue(): int
+  }
+  class Pawn
+  class Rook
+  class Knight
+  class Bishop
+  class Queen
+  class King
+  class PieceFactory <<factory>> { +create(type, team): Piece }
+  class Board {
+    +standard(): Board
+    +pieceAt(Position): Optional<Piece>
+    +place(Position, Piece)
+    +movePiece(from, to): Optional<Piece>
+    +copy(): Board
+    +pieces(team): List<PlacedPiece>
+  }
+}
+
+package "core.rules" {
+  interface MoveContext { +board(): Board\n+enPassantTarget(): Optional<Position> }
+  class BasicMoveContext <<record>>
+  interface MoveRule <<strategy>> { +pseudoLegalMoves(context, from, piece): List<Move> }
+  abstract class LinearMoveRule
+  abstract class StepMoveRule
+  class RookMoveRule
+  class BishopMoveRule
+  class QueenMoveRule
+  class KnightMoveRule
+  class KingMoveRule
+  class PawnMoveRule
+  class MoveRuleFactory <<factory>> { +forType(PieceType): MoveRule\n+forPiece(Piece): MoveRule }
+  class Directions
+  class AttackDetector { +isAttacked(board, square, byTeam): boolean }
+  class MoveGenerator { +legalMoves(board, team, ep): List<Move>\n+hasLegalMove(...)\n+isInCheck(board, team) }
+  class MoveApplier { +apply(board, move): MoveOutcome }
+  class MoveOutcome <<record>>
+  class MaterialChecker { +isInsufficientMaterial(board): boolean }
+}
+
+package "core.game" {
+  interface ChessGame <<decorated component>> {
+    +currentTurn(): Team
+    +board(): Board
+    +status(): GameStatus
+    +legalMoves(): List<Move>
+    +execute(TurnAction)
+    +undo(): boolean
+    +redo(): boolean
+    +play(from, to, promotion)
+    +addObserver(GameObserver)
+  }
+  class Game {
+    +FIFTY_MOVE_HALF_MOVES = 100
+    +REPETITION_LIMIT = 3
+  }
+  abstract class GameDecorator <<decorator>> { #delegate: ChessGame }
+  interface TurnAction <<command>> { +execute(GameState)\n+describe(): String }
+  class MoveAction
+  class ResignAction
+  class AgreeDrawAction
+  class GameState <<originator>> {
+    +board(): Board
+    +turn(): Team
+    +bench(Team): List<Piece>
+    +halfmoveClock(): int
+    +extension(key, type): Optional<T>
+    +save(): GameMemento
+    +copy(): GameState
+  }
+  class GameMemento <<memento>>
+  class MoveRecord <<record>>
+  interface GameEvent <<sealed>>
+  class IllegalMoveException
+  class PromotionRequiredException
+}
+
+' =====================================================================================
+' ADAPTERS
+' =====================================================================================
+package "adapters" {
+  class StandardPieceTheme
+}
+
+package "adapters.nba" {
+  enum Franchise { 30 franchises\n+find(String): Optional<Franchise> }
+  class NbaPieceTheme { +franchiseOf(Team): Franchise }
+  class GameConfig <<record>> { +shotClockEnabled\n+shotClockLimit\n+tradeEnabled\n+hotHandEnabled\n+builder() }
+  class "GameConfig.Builder" as GameConfigBuilder <<builder>>
+  class NbaGameFactory <<factory>> { +create(config, listeners...): ChessGame\n+decorate(base, config, listeners...) }
+
+  class ShotClockGame <<decorator>> { +addListener(ShotClockListener) }
+  class ShotClockAction <<decorator>>
+  interface ShotClockState <<state, sealed>> { +afterOwnMove(progress, limit): ShotClockState }
+  class "ShotClockState.Running" as SCRunning <<record>>
+  class "ShotClockState.Warning" as SCWarning <<record>>
+  class "ShotClockState.Expired" as SCExpired <<record>>
+  class ShotClocks <<record>>
+  interface ShotClockListener <<observer>>
+
+  class HotHandGame <<decorator>> { +STREAK_TO_IGNITE = 2 }
+  class HotHandAction <<decorator>>
+  class Streaks <<record>>
+
+  class TradeAction <<command>> { +TradeAction(square, benchPiece) }
+  class TradeLedger <<record>>
+}
+
+package "adapters.console" {
+  class ConsoleApp { +main(String[]) }
+  class ConsoleRunner
+  interface Command <<sealed>>
+  class CommandParser { +parse(String): Command }
+  class ConsoleBoardRenderer
+  class ConsoleGameObserver
+}
+
+' =====================================================================================
+' RELATIONS - model
+' =====================================================================================
+Piece <|-- Pawn
+Piece <|-- Rook
+Piece <|-- Knight
+Piece <|-- Bishop
+Piece <|-- Queen
+Piece <|-- King
+Piece --> Team
+Piece ..> PieceType
+PieceFactory ..> Piece : creates
+Board "1" o-- "0..32" Piece
+Board ..> Position
+Square --> Position
+Square --> Piece
+PlacedPiece --> Position
+PlacedPiece --> Piece
+Move --> Position
+Move --> MoveType
+Move --> PieceType : promotion
+
+' =====================================================================================
+' RELATIONS - rules
+' =====================================================================================
+MoveRule <|.. LinearMoveRule
+MoveRule <|.. StepMoveRule
+MoveRule <|.. PawnMoveRule
+LinearMoveRule <|-- RookMoveRule
+LinearMoveRule <|-- BishopMoveRule
+LinearMoveRule <|-- QueenMoveRule
+StepMoveRule <|-- KnightMoveRule
+StepMoveRule <|-- KingMoveRule
+MoveContext <|.. BasicMoveContext
+MoveRule ..> MoveContext
+MoveRule ..> Move : produces
+MoveRuleFactory ..> MoveRule : hands out
+MoveRuleFactory ..> PieceType
+KingMoveRule ..> AttackDetector : castling
+LinearMoveRule ..> Directions
+StepMoveRule ..> Directions
+AttackDetector ..> Board
+MoveGenerator ..> MoveRuleFactory
+MoveGenerator ..> MoveApplier
+MoveGenerator ..> AttackDetector
+MoveApplier ..> MoveOutcome
+MoveApplier ..> PieceFactory
+MaterialChecker ..> Board
+
+' =====================================================================================
+' RELATIONS - game
+' =====================================================================================
+ChessGame <|.. Game
+ChessGame <|.. GameDecorator
+GameDecorator o-- ChessGame : delegate
+Game *-- GameState : current
+Game *-- GameMemento : history (before / after)
+Game o-- GameObserver : observers
+Game ..> TurnAction : executes
+Game ..> MoveGenerator
+Game ..> MaterialChecker
+GameState ..> GameMemento : save()
+GameMemento o-- GameState : snapshot
+GameState *-- Board
+GameState o-- Piece : bench
+GameState ..> GameEvent : queues
+GameState --> MoveRecord : lastMove
+GameState ..> GameStatus
+TurnAction <|.. MoveAction
+TurnAction <|.. ResignAction
+TurnAction <|.. AgreeDrawAction
+MoveAction ..> MoveGenerator
+MoveAction ..> MoveApplier
+MoveAction --> Move
+ChessGame ..> TurnAction
+IllegalMoveException <|-- PromotionRequiredException
+
+' =====================================================================================
+' RELATIONS - adapters
+' =====================================================================================
+GameObserver <|.. ConsoleGameObserver
+PieceTheme <|.. StandardPieceTheme
+PieceTheme <|.. NbaPieceTheme
+NbaPieceTheme --> Franchise
+ConsoleGameObserver o-- PieceTheme
+
+GameDecorator <|-- ShotClockGame
+GameDecorator <|-- HotHandGame
+TurnAction <|.. ShotClockAction
+TurnAction <|.. HotHandAction
+TurnAction <|.. TradeAction
+ShotClockAction o-- TurnAction : inner
+HotHandAction o-- TurnAction : inner
+ShotClockGame ..> ShotClockAction : wraps each action
+HotHandGame ..> HotHandAction : wraps each action
+ShotClockGame o-- ShotClockListener
+ShotClockAction ..> ShotClocks
+ShotClocks *-- ShotClockState : white / black
+ShotClockState <|.. SCRunning
+ShotClockState <|.. SCWarning
+ShotClockState <|.. SCExpired
+HotHandAction ..> Streaks
+TradeAction ..> TradeLedger
+TradeAction ..> PieceType
+
+GameConfig +-- GameConfigBuilder
+NbaGameFactory ..> GameConfig
+NbaGameFactory ..> Game
+NbaGameFactory ..> ShotClockGame
+NbaGameFactory ..> HotHandGame
+
+ConsoleApp ..> ConsoleRunner
+ConsoleRunner ..> ChessGame
+ConsoleRunner ..> CommandParser
+ConsoleRunner ..> ConsoleBoardRenderer
+ConsoleRunner ..> ConsoleGameObserver
+ConsoleRunner ..> NbaGameFactory
+ConsoleRunner ..> TradeAction
+ConsoleRunner o-- PieceTheme
+CommandParser ..> Command
+
+@enduml

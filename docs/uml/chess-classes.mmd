@@ -1,0 +1,207 @@
+%% Mermaid class diagram of the chess project (paste into a ```mermaid block, mermaid.live, or most Markdown viewers).
+%% It shows the same classes as chess-classes.puml; members are trimmed to the essential ones.
+classDiagram
+direction TB
+
+namespace ports {
+  class GameObserver {
+    <<interface>>
+    onMovePlayed()
+    onPieceCaptured()
+    onPiecePromoted()
+    onCheck()
+    onGameEnded()
+    onNotice()
+  }
+  class PieceTheme {
+    <<interface>>
+    teamName()
+    pieceName()
+    icon()
+  }
+}
+
+namespace core_model {
+  class Team { <<enumeration>> WHITE BLACK }
+  class PieceType { <<enumeration>> KING QUEEN ROOK BISHOP KNIGHT PAWN }
+  class MoveType { <<enumeration>> }
+  class GameStatus { <<enumeration>> }
+  class Position { <<record>> file rank }
+  class Move { <<record>> from to type promotion }
+  class Square { <<record>> }
+  class PlacedPiece { <<record>> }
+  class Piece { <<abstract>> type() withMoved() materialValue() }
+  class Pawn
+  class Rook
+  class Knight
+  class Bishop
+  class Queen
+  class King
+  class PieceFactory { create() }
+  class Board { standard() pieceAt() place() movePiece() copy() pieces() }
+}
+
+namespace core_rules {
+  class MoveContext { <<interface>> }
+  class BasicMoveContext { <<record>> }
+  class MoveRule { <<interface, Strategy>> pseudoLegalMoves() }
+  class LinearMoveRule { <<abstract>> }
+  class StepMoveRule { <<abstract>> }
+  class RookMoveRule
+  class BishopMoveRule
+  class QueenMoveRule
+  class KnightMoveRule
+  class KingMoveRule
+  class PawnMoveRule
+  class MoveRuleFactory { forType() forPiece() }
+  class Directions
+  class AttackDetector { isAttacked() }
+  class MoveGenerator { legalMoves() hasLegalMove() isInCheck() }
+  class MoveApplier { apply() }
+  class MoveOutcome { <<record>> }
+  class MaterialChecker { isInsufficientMaterial() }
+}
+
+namespace core_game {
+  class ChessGame { <<interface>> execute() undo() redo() play() status() legalMoves() }
+  class Game { FIFTY_MOVE_HALF_MOVES REPETITION_LIMIT }
+  class GameDecorator { <<abstract, Decorator>> delegate }
+  class TurnAction { <<interface, Command>> execute() describe() }
+  class MoveAction
+  class ResignAction
+  class AgreeDrawAction
+  class GameState { <<Originator>> save() copy() bench() extension() }
+  class GameMemento { <<Memento>> }
+  class MoveRecord { <<record>> }
+  class GameEvent { <<sealed interface>> }
+  class IllegalMoveException
+  class PromotionRequiredException
+}
+
+namespace adapters {
+  class StandardPieceTheme
+}
+
+namespace adapters_nba {
+  class Franchise { <<enumeration>> 30 franchises }
+  class NbaPieceTheme
+  class GameConfig { <<record>> }
+  class NbaGameFactory { create() decorate() }
+  class ShotClockGame { <<Decorator>> }
+  class ShotClockAction { <<Decorator>> }
+  class ShotClockState { <<sealed interface, State>> afterOwnMove() }
+  class ShotClockStateRunning { <<record>> }
+  class ShotClockStateWarning { <<record>> }
+  class ShotClockStateExpired { <<record>> }
+  class ShotClocks { <<record>> }
+  class ShotClockListener { <<interface, Observer>> }
+  class HotHandGame { <<Decorator>> }
+  class HotHandAction { <<Decorator>> }
+  class Streaks { <<record>> }
+  class TradeAction { <<Command>> }
+  class TradeLedger { <<record>> }
+}
+
+namespace adapters_console {
+  class ConsoleApp { main() }
+  class ConsoleRunner
+  class Command { <<sealed interface>> }
+  class CommandParser { parse() }
+  class ConsoleBoardRenderer
+  class ConsoleGameObserver
+}
+
+%% model
+Piece <|-- Pawn
+Piece <|-- Rook
+Piece <|-- Knight
+Piece <|-- Bishop
+Piece <|-- Queen
+Piece <|-- King
+Piece --> Team
+PieceFactory ..> Piece : creates
+Board o-- Piece
+Board ..> Position
+Square --> Position
+PlacedPiece --> Piece
+Move --> Position
+Move --> MoveType
+
+%% rules
+MoveRule <|.. LinearMoveRule
+MoveRule <|.. StepMoveRule
+MoveRule <|.. PawnMoveRule
+LinearMoveRule <|-- RookMoveRule
+LinearMoveRule <|-- BishopMoveRule
+LinearMoveRule <|-- QueenMoveRule
+StepMoveRule <|-- KnightMoveRule
+StepMoveRule <|-- KingMoveRule
+MoveContext <|.. BasicMoveContext
+MoveRule ..> MoveContext
+MoveRuleFactory ..> MoveRule : hands out
+KingMoveRule ..> AttackDetector : castling
+LinearMoveRule ..> Directions
+StepMoveRule ..> Directions
+MoveGenerator ..> MoveRuleFactory
+MoveGenerator ..> MoveApplier
+MoveGenerator ..> AttackDetector
+MoveApplier ..> MoveOutcome
+MoveApplier ..> PieceFactory
+
+%% game
+ChessGame <|.. Game
+ChessGame <|.. GameDecorator
+GameDecorator o-- ChessGame : delegate
+Game *-- GameState
+Game *-- GameMemento : history
+Game o-- GameObserver
+Game ..> TurnAction : executes
+Game ..> MoveGenerator
+Game ..> MaterialChecker
+GameState ..> GameMemento : save
+GameState *-- Board
+GameState o-- Piece : bench
+GameState ..> GameEvent
+GameState --> MoveRecord
+TurnAction <|.. MoveAction
+TurnAction <|.. ResignAction
+TurnAction <|.. AgreeDrawAction
+MoveAction ..> MoveGenerator
+MoveAction ..> MoveApplier
+IllegalMoveException <|-- PromotionRequiredException
+
+%% adapters
+GameObserver <|.. ConsoleGameObserver
+PieceTheme <|.. StandardPieceTheme
+PieceTheme <|.. NbaPieceTheme
+NbaPieceTheme --> Franchise
+ConsoleGameObserver o-- PieceTheme
+GameDecorator <|-- ShotClockGame
+GameDecorator <|-- HotHandGame
+TurnAction <|.. ShotClockAction
+TurnAction <|.. HotHandAction
+TurnAction <|.. TradeAction
+ShotClockAction o-- TurnAction : inner
+HotHandAction o-- TurnAction : inner
+ShotClockGame ..> ShotClockAction
+HotHandGame ..> HotHandAction
+ShotClockGame o-- ShotClockListener
+ShotClockAction ..> ShotClocks
+ShotClocks *-- ShotClockState
+ShotClockState <|.. ShotClockStateRunning
+ShotClockState <|.. ShotClockStateWarning
+ShotClockState <|.. ShotClockStateExpired
+HotHandAction ..> Streaks
+TradeAction ..> TradeLedger
+NbaGameFactory ..> GameConfig
+NbaGameFactory ..> Game
+NbaGameFactory ..> ShotClockGame
+NbaGameFactory ..> HotHandGame
+ConsoleApp ..> ConsoleRunner
+ConsoleRunner ..> ChessGame
+ConsoleRunner ..> CommandParser
+ConsoleRunner ..> ConsoleBoardRenderer
+ConsoleRunner ..> ConsoleGameObserver
+ConsoleRunner ..> NbaGameFactory
+ConsoleRunner ..> TradeAction
+CommandParser ..> Command

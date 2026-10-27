@@ -1,32 +1,65 @@
 package ar.uade.tpo.chess.core.model;
 
+import java.util.Objects;
+
 /**
- * Base type for every chess piece. Concrete pieces (Pawn, Rook, Knight,
- * Bishop, Queen, King) hold no board-specific state themselves: "can this
- * pawn still move two squares" is derived from its starting row instead of
- * a mutable flag, so a Piece is safe to share and cheap to copy.
+ * A chess piece. Pieces are immutable: "moving" a piece replaces it with {@link #withMoved(boolean)}, which is
+ * what lets the game take cheap snapshots (Memento) for undo/redo.
+ *
+ * <p>How a piece moves is not decided here: movement is a Strategy ({@code MoveRule}) looked up by
+ * {@link #type()}, which keeps the model free of rule logic and avoids a cycle with the rules package.
  */
 public abstract class Piece {
 
     private final Team team;
+    private final boolean moved;
 
-    protected Piece(Team team) {
-        this.team = team;
+    protected Piece(Team team, boolean moved) {
+        this.team = Objects.requireNonNull(team, "team");
+        this.moved = moved;
     }
 
-    public Team getTeam() {
+    public abstract PieceType type();
+
+    /** A copy of this piece with the given "has moved" flag (matters for castling rights). */
+    public abstract Piece withMoved(boolean moved);
+
+    /** Conventional material value (pawn 1, minor 3, rook 5, queen 9; the king has no exchange value). */
+    public abstract int materialValue();
+
+    public Team team() {
         return team;
     }
 
-    public abstract PieceType getType();
+    public boolean hasMoved() {
+        return moved;
+    }
 
-    /**
-     * Returns a new, independent Piece of the same concrete type and team.
-     * Used when the board is copied to simulate a move.
-     */
-    public abstract Piece copy();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Piece other = (Piece) o;
+        return team == other.team && moved == other.moved;
+    }
 
-    public boolean isSameTeam(Piece other) {
-        return other != null && this.team == other.team;
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass(), team, moved);
+    }
+
+    /** Diagram letter: uppercase for white, lowercase for black. */
+    public char symbol() {
+        char letter = type().letter();
+        return team == Team.WHITE ? letter : Character.toLowerCase(letter);
+    }
+
+    @Override
+    public String toString() {
+        return team + " " + type();
     }
 }
