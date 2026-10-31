@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * "Perft" counts every legal line of play to a fixed depth. The numbers below are the well-known reference
- * values for these positions, so matching them is strong evidence that move generation (castling, en passant,
- * promotion, pins and checks included) is exactly right.
+ * «Perft» cuenta todas las secuencias de jugadas legales hasta cierta profundidad. Los valores siguientes son
+ * referencias conocidas para estas posiciones; coincidir con ellos es una buena señal de que se generan bien
+ * los movimientos, incluidos enroques, capturas al paso, promociones, clavadas y jaques.
  */
 class PerftTest {
 

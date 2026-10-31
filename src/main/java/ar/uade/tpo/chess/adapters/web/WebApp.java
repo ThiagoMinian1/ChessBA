@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-/** Local HTTP adapter. All chess decisions stay in the existing game engine. */
+/** Adaptador HTTP local. Las decisiones de ajedrez siguen a cargo del motor existente. */
 public final class WebApp {
     private final HttpServer server;
     private final Map<String, Session> sessions = new LinkedHashMap<>();
@@ -222,7 +222,7 @@ public final class WebApp {
         e.sendResponseHeaders(status, bytes.length); e.getResponseBody().write(bytes);
     }
 
-    /** JSON output for the adapter's strings, primitives, maps and lists. */
+    /** Convierte a JSON cadenas, valores simples, mapas y listas usados por el adaptador. */
     static String json(Object value) {
         if (value == null) return "null";
         if (value instanceof Boolean || value instanceof Number) return value.toString();

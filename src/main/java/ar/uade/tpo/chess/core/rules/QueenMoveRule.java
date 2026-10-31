@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.rules;
 
-/** Queen: any distance along ranks, files and diagonals. */
+/** Dama: se desplaza cualquier cantidad de casillas en filas, columnas y diagonales. */
 public final class QueenMoveRule extends LinearMoveRule {
 
     @Override

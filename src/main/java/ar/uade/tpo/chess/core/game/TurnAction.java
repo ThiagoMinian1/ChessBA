@@ -1,18 +1,18 @@
 package ar.uade.tpo.chess.core.game;
 
 /**
- * Command: one thing a player (or a rule) can do on their turn. A normal move is one implementation;
- * resigning or agreeing a draw are others; themed adapters add their own without touching the core.
+ * Comando: algo que un jugador (o una regla) puede hacer en su turno. Una jugada normal es una implementación;
+ * abandonar o acordar tablas son otras. Los adaptadores pueden agregar acciones propias sin tocar el núcleo.
  *
- * <p>An action never has to know how to undo itself: the {@link Game} runs it on a copy of the state and keeps
- * {@link GameMemento}s from before and after, so any action is automatically undoable and redoable.
- * An action may throw {@link IllegalMoveException}; nothing is then changed.
+ * <p>Las acciones no necesitan saber cómo deshacerse: {@link Game} las ejecuta sobre una copia y guarda
+ * {@link GameMemento}s del estado anterior y posterior. Así, cualquier acción se puede deshacer y rehacer.
+ * Si una acción lanza {@link IllegalMoveException}, el estado no cambia.
  */
 public interface TurnAction {
 
-    /** Applies this action to the given (working copy of the) state. */
+    /** Aplica esta acción al estado indicado (que es una copia de trabajo). */
     void execute(GameState state);
 
-    /** Short human-readable description, used in the game history. */
+    /** Descripción breve para mostrar en el historial de la partida. */
     String describe();
 }

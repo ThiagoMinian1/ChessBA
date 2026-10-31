@@ -24,7 +24,7 @@ class ScoreboardGameTest {
         return NbaGameFactory.decorate(gameOf(turn, placements), SCOREBOARD);
     }
 
-    // ---- Points ----------------------------------------------------------------------------------------
+    // ---- Puntos ----------------------------------------------------------------------------------------
 
     @Test
     void everyCaptureScoresTheConventionalValueOfThePiece() {
@@ -49,7 +49,7 @@ class ScoreboardGameTest {
     void eachTeamKeepsItsOwnScore() {
         ChessGame game = NbaGameFactory.create(SCOREBOARD);
         play(game, "e2e4", "d7d5", "e4d5", "d8d5", "b1c3", "d5g2", "f1g2");
-        // white took a pawn (1) and the queen (9); black took two pawns (1 + 1).
+        // Las blancas capturaron un peón (1) y la dama (9); las negras, dos peones (1 + 1).
         assertEquals(10, ScoreboardGame.scoreOf(game, Team.WHITE));
         assertEquals(2, ScoreboardGame.scoreOf(game, Team.BLACK));
     }
@@ -109,11 +109,11 @@ class ScoreboardGameTest {
         assertEquals(List.of("Scoreboard: WHITE scores 1 point (1-0)"), notices);
     }
 
-    // ---- Deciding drawn games --------------------------------------------------------------------------
+    // ---- Desempate de partidas en tablas ---------------------------------------------------------------
 
     @Test
     void aDrawByRuleGoesToTheTeamWithMorePoints() {
-        // Bxf4 leaves king + bishop against a bare king: a draw by insufficient material, 3 points to white.
+        // Axf4 deja rey y alfil contra un rey solo: tablas por material insuficiente y 3 puntos para las blancas.
         ChessGame game = scoreboard(Team.WHITE, "Ka1", "Bc1", "kh8", "nf4");
         play(game, "c1f4");
         assertEquals(GameStatus.DRAW_INSUFFICIENT_MATERIAL, game.status(), "the chess status is still the real one");
@@ -181,7 +181,7 @@ class ScoreboardGameTest {
         assertEquals(0, ScoreboardGame.scoreOf(game, Team.WHITE));
     }
 
-    // ---- Together with the other mechanics -------------------------------------------------------------
+    // ---- Combinación con otras mecánicas ---------------------------------------------------------------
 
     @Test
     void itWorksTogetherWithTheOtherThreeMechanics() {

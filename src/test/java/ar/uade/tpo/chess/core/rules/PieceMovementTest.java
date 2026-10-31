@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Movement of rook, knight, bishop, queen and king, plus the rule factory that hands them out. */
+/** Movimientos de torre, caballo, alfil, dama y rey, y la fábrica que asigna sus reglas. */
 class PieceMovementTest {
 
-    // ---- Rook ------------------------------------------------------------------------------------------
+    // ---- Torre -----------------------------------------------------------------------------------------
 
     @Test
     void rookOnAnEmptyBoardSlidesAlongRankAndFile() {
@@ -54,7 +54,7 @@ class PieceMovementTest {
         assertFalse(pseudoTargets(boardOf("Rd4"), "d4").contains("e5"));
     }
 
-    // ---- Knight ----------------------------------------------------------------------------------------
+    // ---- Caballo ---------------------------------------------------------------------------------------
 
     @Test
     void knightInTheCentreHasEightMoves() {
@@ -80,7 +80,7 @@ class PieceMovementTest {
         assertEquals(Set.of("g2", "g6", "f3", "f5"), pseudoTargets(boardOf("Nh4"), "h4"));
     }
 
-    // ---- Bishop ----------------------------------------------------------------------------------------
+    // ---- Alfil -----------------------------------------------------------------------------------------
 
     @Test
     void bishopOnAnEmptyBoardSlidesAlongDiagonals() {
@@ -116,7 +116,7 @@ class PieceMovementTest {
         }
     }
 
-    // ---- Queen -----------------------------------------------------------------------------------------
+    // ---- Dama ------------------------------------------------------------------------------------------
 
     @Test
     void queenCombinesRookAndBishop() {
@@ -135,7 +135,7 @@ class PieceMovementTest {
         assertTrue(targets.contains("e4"));
     }
 
-    // ---- King ------------------------------------------------------------------------------------------
+    // ---- Rey -------------------------------------------------------------------------------------------
 
     @Test
     void kingMovesOneSquareInAnyDirection() {
@@ -160,7 +160,7 @@ class PieceMovementTest {
         assertTrue(pseudoMoves(boardOf("Ke2", "Ra1", "Rh1"), "e2").stream().noneMatch(m -> m.isCastling()));
     }
 
-    // ---- Factory ---------------------------------------------------------------------------------------
+    // ---- Fábrica ---------------------------------------------------------------------------------------
 
     @Test
     void factoryHandsOutTheRuleOfEachPieceType() {

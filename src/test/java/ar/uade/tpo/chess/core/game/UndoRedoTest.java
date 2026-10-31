@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UndoRedoTest {
 
-    /** Everything observable about a game, so "exactly the same state" can be asserted with one equals(). */
+    /** Reúne lo observable de una partida para comprobar con un solo equals() que el estado sea idéntico. */
     private record Snapshot(Board board, Team turn, GameStatus status, int clock,
                             List<Piece> whiteBench, List<Piece> blackBench,
                             List<String> history, Set<String> legalMoves, boolean canUndo, boolean canRedo) {
@@ -38,7 +38,7 @@ class UndoRedoTest {
                 game.canUndo(), game.canRedo());
     }
 
-    /** Same as {@link #snap} but ignoring the undo/redo flags, for comparing a state before and after a round trip. */
+    /** Como {@link #snap}, pero ignora los indicadores de deshacer y rehacer para comparar antes y después del ciclo. */
     private static Snapshot position(ChessGame game) {
         Snapshot s = snap(game);
         return new Snapshot(s.board(), s.turn(), s.status(), s.clock(), s.whiteBench(), s.blackBench(),
@@ -277,7 +277,7 @@ class UndoRedoTest {
 
     @Test
     void undoingAndRedoingAMixOfSpecialMovesIsExact() {
-        // Castle, capture and promotion in a single game, walked back and forth.
+        // Enroque, captura y promoción en una misma partida; se deshacen y rehacen varias veces.
         Game game = gameOf(Team.WHITE, "Ke1", "Rh1", "Pa7", "ke8", "rb8", "pc3");
         List<Snapshot> states = new ArrayList<>();
         states.add(position(game));

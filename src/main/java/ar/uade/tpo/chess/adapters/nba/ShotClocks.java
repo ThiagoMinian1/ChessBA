@@ -2,7 +2,7 @@ package ar.uade.tpo.chess.adapters.nba;
 
 import ar.uade.tpo.chess.core.model.Team;
 
-/** Both teams' shot clocks, stored as one immutable value in the game state's extensions. */
+/** Relojes de posesión de ambos bandos, guardados como un valor inmutable en las extensiones del estado. */
 record ShotClocks(ShotClockState white, ShotClockState black) {
 
     static ShotClocks fresh() {

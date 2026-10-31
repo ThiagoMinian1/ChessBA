@@ -10,8 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Turns pseudo-legal moves into <em>legal</em> ones: a move is legal when, after making it, the mover's own
- * king is not attacked. This one filter covers pins, moving into check, and having to answer a check.
+ * Filtra los movimientos pseudo-legales para quedarse con los legales: después de mover, el rey propio no debe
+ * quedar bajo ataque. Este filtro contempla las piezas clavadas, las jugadas que dejan al rey en jaque y las
+ * respuestas necesarias cuando el rey ya está en jaque.
  */
 public final class MoveGenerator {
 
@@ -35,7 +36,7 @@ public final class MoveGenerator {
         return legal;
     }
 
-    /** Cheaper than {@code !legalMoves(...).isEmpty()}: stops at the first legal move found. */
+    /** Más eficiente que {@code !legalMoves(...).isEmpty()}: se detiene al encontrar una jugada legal. */
     public static boolean hasLegalMove(Board board, Team team, Position enPassantTarget) {
         List<Move> found = new ArrayList<>();
         for (PlacedPiece placed : board.pieces(team)) {
@@ -47,7 +48,7 @@ public final class MoveGenerator {
         return false;
     }
 
-    /** True if {@code team}'s king is attacked. A board with no king for that team is never "in check". */
+    /** Indica si el rey de {@code team} está bajo ataque. Si el bando no tiene rey, no está en jaque. */
     public static boolean isInCheck(Board board, Team team) {
         return board.findKing(team)
                 .map(king -> AttackDetector.isAttacked(board, king, team.opposite()))

@@ -3,10 +3,10 @@ package ar.uade.tpo.chess.adapters.console;
 import ar.uade.tpo.chess.core.model.PieceType;
 import ar.uade.tpo.chess.core.model.Position;
 
-/** What a line typed in the console means. Parsing produces one of these; running them is the runner's job. */
+/** Significado de una línea ingresada en la consola. El análisis crea uno de estos comandos y el runner lo ejecuta. */
 public sealed interface Command {
 
-    /** A move in coordinates; {@code promotion} is null unless the player already chose a piece (e.g. "e7 e8 q"). */
+    /** Movimiento por coordenadas; {@code promotion} es null si el jugador todavía no eligió una pieza (por ejemplo, "e7 e8 q"). */
     record MoveCommand(Position from, Position to, PieceType promotion) implements Command {
     }
 
@@ -16,7 +16,7 @@ public sealed interface Command {
     record Redo() implements Command {
     }
 
-    /** Trade: the own piece on {@code square} goes to the bench and a bench piece of type {@code benchPiece} comes in. */
+    /** Intercambio: la pieza propia de {@code square} pasa al banco y entra una pieza del tipo {@code benchPiece}. */
     record Trade(Position square, PieceType benchPiece) implements Command {
     }
 
@@ -35,7 +35,7 @@ public sealed interface Command {
     record Quit() implements Command {
     }
 
-    /** The line could not be understood; {@code reason} is shown to the player. */
+    /** No se pudo interpretar la línea; se muestra {@code reason} al jugador. */
     record Invalid(String reason) implements Command {
     }
 }

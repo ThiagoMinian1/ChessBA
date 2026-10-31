@@ -5,7 +5,7 @@ skinparam packageStyle rectangle
 skinparam linetype ortho
 
 ' =====================================================================================
-' PORTS  (interfaces owned by the core; implemented by adapters)
+' PUERTOS (interfaces del núcleo implementadas por los adaptadores)
 ' =====================================================================================
 package "ports" {
   interface GameObserver <<port>> {
@@ -24,7 +24,7 @@ package "ports" {
 }
 
 ' =====================================================================================
-' CORE
+' NÚCLEO
 ' =====================================================================================
 package "core.model" {
   enum Team { WHITE\nBLACK\n+opposite()\n+forward() }
@@ -118,7 +118,7 @@ package "core.game" {
 }
 
 ' =====================================================================================
-' ADAPTERS
+' ADAPTADORES
 ' =====================================================================================
 package "adapters" {
   class StandardPieceTheme
@@ -162,7 +162,7 @@ package "adapters.console" {
 }
 
 ' =====================================================================================
-' RELATIONS - model
+' RELACIONES - modelo
 ' =====================================================================================
 Piece <|-- Pawn
 Piece <|-- Rook
@@ -184,7 +184,7 @@ Move --> MoveType
 Move --> PieceType : promotion
 
 ' =====================================================================================
-' RELATIONS - rules
+' RELACIONES - reglas
 ' =====================================================================================
 MoveRule <|.. LinearMoveRule
 MoveRule <|.. StepMoveRule
@@ -211,7 +211,7 @@ MoveApplier ..> PieceFactory
 MaterialChecker ..> Board
 
 ' =====================================================================================
-' RELATIONS - game
+' RELACIONES - partida
 ' =====================================================================================
 ChessGame <|.. Game
 ChessGame <|.. GameDecorator
@@ -239,7 +239,7 @@ ChessGame ..> TurnAction
 IllegalMoveException <|-- PromotionRequiredException
 
 ' =====================================================================================
-' RELATIONS - adapters
+' RELACIONES - adaptadores
 ' =====================================================================================
 GameObserver <|.. ConsoleGameObserver
 PieceTheme <|.. StandardPieceTheme

@@ -62,7 +62,7 @@ class EnPassantTest {
     void noEnPassantAfterASingleStep() {
         Game game = gameOf(Team.BLACK, "Ke1", "ke8", "Pe5", "pd7");
         play(game, "d7d6");
-        // d6 is now simply occupied; there was no double push, so only an ordinary capture on d6 remains.
+        // d6 está ocupada y no hubo avance doble, así que solo queda la captura normal en d6.
         Move capture = game.legalMovesFrom(pos("e5")).stream()
                 .filter(m -> m.to().equals(pos("d6"))).findFirst().orElseThrow();
         assertEquals(MoveType.NORMAL, capture.type());
@@ -85,7 +85,7 @@ class EnPassantTest {
 
     @Test
     void anEnPassantCaptureThatExposesTheKingIsIllegal() {
-        // After ...d5, taking en passant would remove both pawns from the fifth rank and open it to the rook.
+        // Después de ...d5, capturar al paso quitaría ambos peones de la quinta fila y dejaría paso a la torre.
         Game game = gameOf(Team.BLACK, "Ka5", "Pe5", "ke8", "pd7", "rh5");
         game.play(pos("d7"), pos("d5"));
         assertEquals(Set.of("e6"), targetsFrom(game, "e5"));
@@ -94,9 +94,9 @@ class EnPassantTest {
 
     @Test
     void enPassantCanAnswerACheckByCapturingTheCheckingPawn() {
-        // The black pawn that just double-pushed gives check to the king on e4; capturing it en passant resolves it.
+        // El peón negro que avanzó dos casillas da jaque al rey de e4; capturarlo al paso lo resuelve.
         Game game = gameOf(Team.BLACK, "Ke4", "Pe5", "ke8", "pd7");
-        // d7-d5 attacks e4, putting the white king in check; the d5 pawn can be taken en passant by e5.
+        // d7-d5 ataca e4 y deja al rey blanco en jaque; el peón de d5 puede capturarse al paso desde e5.
         game.play(pos("d7"), pos("d5"));
         assertTrue(game.isInCheck());
         assertTrue(targetsFrom(game, "e5").contains("d6"));

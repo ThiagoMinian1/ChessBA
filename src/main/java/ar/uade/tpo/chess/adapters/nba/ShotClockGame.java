@@ -9,19 +9,20 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Mechanic 1 - shot clock (patterns: Decorator + State + Observer).
+ * Mecánica 1: reloj de posesión (patrones Decorator, State y Observer).
  *
- * <p>Each team must make progress (capture a piece or advance a pawn) within {@code limit} of its own moves.
- * If it does not, its next turn is skipped and its clock resets, so the opponent moves twice in a row.
+ * <p>Cada bando debe progresar (capturar una pieza o avanzar un peón) dentro de {@code limit} jugadas propias.
+ * Si no lo hace, se salta su siguiente turno y se reinicia el reloj; el rival juega dos veces seguidas.
  *
  * <ul>
- *   <li><b>Decorator:</b> wraps any {@link ChessGame} and never touches the core's move validation.</li>
- *   <li><b>State:</b> each team's clock is a {@link ShotClockState}.</li>
- *   <li><b>Observer:</b> {@link ShotClockListener}s hear about warnings and violations.</li>
+ *   <li><b>Decorator:</b> envuelve cualquier {@link ChessGame} sin intervenir en la validación del núcleo.</li>
+ *   <li><b>State:</b> el reloj de cada bando se representa con {@link ShotClockState}.</li>
+ *   <li><b>Observer:</b> {@link ShotClockListener} recibe avisos y notificaciones de infracciones.</li>
  * </ul>
  *
- * <p>Mandatory TP rule touched: <em>turn alternation</em>, because a skip lets one side move twice in a row.
- * It is reversible: the mechanic exists only when this decorator is in the chain, and the core is unchanged.
+ * <p>Regla obligatoria del TP que modifica: <em>alternancia de turnos</em>, ya que un bando puede jugar dos
+ * veces seguidas si se salta el turno del rival. La mecánica es opcional: solo se activa si se agrega este
+ * decorador y no requiere cambios en el núcleo.
  */
 public final class ShotClockGame extends GameDecorator {
 
@@ -67,7 +68,7 @@ public final class ShotClockGame extends GameDecorator {
         }
     }
 
-    /** The current clock state of {@code team} in any game, even when this mechanic is not enabled (then: fresh). */
+    /** Estado actual del reloj de {@code team}; si la mecánica está desactivada, devuelve el estado inicial. */
     public static ShotClockState stateOf(ChessGame game, Team team) {
         return game.extension(ShotClockAction.KEY, ShotClocks.class)
                 .orElseGet(ShotClocks::fresh)

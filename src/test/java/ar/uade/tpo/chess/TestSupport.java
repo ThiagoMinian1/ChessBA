@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-/** Helpers shared by the tests. Nothing here is part of the product. */
+/** Ayudantes compartidos por las pruebas. No forman parte del producto. */
 public final class TestSupport {
 
     private TestSupport() {
@@ -35,8 +35,8 @@ public final class TestSupport {
     }
 
     /**
-     * Builds a board from piece placements like {@code "Ke1"} (white king on e1) or {@code "pd5"} (black pawn
-     * on d5): uppercase letter is white, lowercase is black. All pieces start unmoved.
+     * Crea un tablero a partir de piezas como {@code "Ke1"} (rey blanco en e1) o {@code "pd5"} (peón negro en d5):
+     * las mayúsculas representan blancas y las minúsculas, negras. Todas empiezan sin mover.
      */
     public static Board boardOf(String... placements) {
         Board board = Board.empty();
@@ -57,7 +57,7 @@ public final class TestSupport {
         return new Game(stateOf(turn, placements));
     }
 
-    /** Plays coordinate moves such as {@code "e2e4"} or, for promotions, {@code "e7e8q"}. */
+    /** Juega movimientos por coordenadas, como {@code "e2e4"} o, para promocionar, {@code "e7e8q"}. */
     public static void play(ChessGame game, String... moves) {
         for (String move : moves) {
             Position from = Position.of(move.substring(0, 2));
@@ -67,7 +67,7 @@ public final class TestSupport {
         }
     }
 
-    /** The destination squares of the moves, sorted. */
+    /** Casillas de destino de los movimientos, ordenadas. */
     public static Set<String> targets(List<Move> moves) {
         Set<String> result = new TreeSet<>();
         for (Move move : moves) {
@@ -80,7 +80,7 @@ public final class TestSupport {
         return targets(game.legalMovesFrom(pos(from)));
     }
 
-    /** Pseudo-legal moves of the piece standing on {@code from} (no check filtering, no en passant). */
+    /** Movimientos pseudo-legales de la pieza en {@code from} (sin filtrar jaques ni incluir capturas al paso). */
     public static List<Move> pseudoMoves(Board board, String from) {
         Position at = Position.of(from);
         Piece piece = board.pieceAt(at).orElseThrow();
@@ -98,7 +98,7 @@ public final class TestSupport {
         return targets(pseudoMoves(board, from));
     }
 
-    /** Records every event it hears as a short string, in order. */
+    /** Registra en orden cada evento recibido como una cadena breve. */
     public static final class Recorder implements GameObserver {
 
         public final List<String> events = new ArrayList<>();
@@ -136,7 +136,7 @@ public final class TestSupport {
 
     // ---- Perft ---------------------------------------------------------------------------------------
 
-    /** Builds a state from a FEN string (placement, side to move, castling rights, en passant square). */
+    /** Crea un estado a partir de una cadena FEN (piezas, turno, derechos de enroque y casilla de captura al paso). */
     public static GameState fromFen(String fen) {
         String[] fields = fen.split(" ");
         String castling = fields[2];
@@ -162,7 +162,7 @@ public final class TestSupport {
         return state;
     }
 
-    /** A king or rook counts as moved unless the FEN grants the castling right that involves it. */
+    /** El rey o la torre cuentan como movidos salvo que la FEN les otorgue el derecho a enrocar correspondiente. */
     private static boolean hasMoved(PieceType type, Team team, int file, int rank, String castling) {
         boolean kingside = castling.contains(team == Team.WHITE ? "K" : "k");
         boolean queenside = castling.contains(team == Team.WHITE ? "Q" : "q");
@@ -180,7 +180,7 @@ public final class TestSupport {
         return false;
     }
 
-    /** Counts leaf nodes of the legal-move tree to the given depth. */
+    /** Cuenta las posiciones finales del árbol de jugadas legales hasta la profundidad indicada. */
     public static long perft(Board board, Team turn, Position enPassant, int depth) {
         List<Move> moves = MoveGenerator.legalMoves(board, turn, enPassant);
         if (depth == 1) {

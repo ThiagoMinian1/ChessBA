@@ -18,16 +18,17 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Everything that defines where a game stands. This is the Originator of the Memento pattern: it can
- * {@link #save()} itself and be rebuilt from a {@link GameMemento}.
+ * Contiene todo lo que define el estado de una partida. Es el Originator del patrón Memento: puede guardarse
+ * con {@link #save()} y reconstruirse a partir de un {@link GameMemento}.
  *
- * <p>The state is mutable <em>on purpose</em>, but only inside a {@link TurnAction}: the {@link Game} always
- * runs an action on a private copy and installs that copy only if the action succeeds. Code outside an action
- * never receives a live state.
+ * <p>El estado es mutable <em>a propósito</em>, pero solo mientras se ejecuta una {@link TurnAction}: {@link Game}
+ * trabaja sobre una copia privada y la instala únicamente si la acción termina bien. Fuera de una acción nadie
+ * recibe el estado activo.
  *
- * <p>The "bench" of a team holds that team's pieces that are off the board (captured ones). Extensions are an
- * opaque map of <em>immutable</em> values where decorators keep their own state (a clock, a streak); because
- * the map is part of every snapshot, that state is undone and redone together with the board.
+ * <p>El «banco» de cada bando guarda sus piezas que ya no están en el tablero, incluidas las capturadas.
+ * Las extensiones forman un mapa opaco de valores <em>inmutables</em> donde los decoradores guardan su estado
+ * (por ejemplo, un reloj o una racha). Como el mapa se incluye en cada copia, también se deshace y rehace junto
+ * con el tablero.
  */
 public final class GameState {
 
@@ -51,12 +52,12 @@ public final class GameState {
         }
     }
 
-    /** The standard starting position with white to move. */
+    /** Posición inicial estándar, con las blancas al turno. */
     public static GameState initial() {
         return new GameState(Board.standard(), Team.WHITE);
     }
 
-    /** A state for a custom position (the board is copied). Position history starts when a {@link Game} adopts it. */
+    /** Estado con una posición personalizada (se copia el tablero). El historial empieza cuando lo adopta {@link Game}. */
     public static GameState of(Board board, Team turn) {
         return new GameState(board.copy(), turn);
     }
@@ -67,7 +68,7 @@ public final class GameState {
         return new GameMemento(copy());
     }
 
-    /** A deep copy: board, histories and extensions are independent of the original. Pending events are not copied. */
+    /** Copia profunda: tablero, historiales y extensiones son independientes del original. No copia eventos pendientes. */
     public GameState copy() {
         GameState copy = new GameState(board.copy(), turn);
         copy.enPassantTarget = enPassantTarget;
@@ -83,9 +84,9 @@ public final class GameState {
         return copy;
     }
 
-    // ---- Board and turn --------------------------------------------------------------------------------
+    // ---- Tablero y turno -------------------------------------------------------------------------------
 
-    /** The live board of this state; inside an action it is the working copy, so mutating it is expected. */
+    /** Tablero activo del estado. Dentro de una acción es la copia de trabajo y se puede modificar. */
     public Board board() {
         return board;
     }
@@ -98,7 +99,7 @@ public final class GameState {
         this.turn = Objects.requireNonNull(turn, "turn");
     }
 
-    /** The square a pawn just skipped over with a double push; capturable en passant for exactly one move. */
+    /** Casilla que saltó el peón al avanzar dos posiciones; permite una captura al paso durante un turno. */
     public Optional<Position> enPassantTarget() {
         return Optional.ofNullable(enPassantTarget);
     }
@@ -107,7 +108,7 @@ public final class GameState {
         this.enPassantTarget = target;
     }
 
-    /** Half-moves since the last capture or pawn move; 100 of them draw the game (fifty-move rule). */
+    /** Medias jugadas desde la última captura o movimiento de peón; a las 100 se declaran tablas (regla de los 50 movimientos). */
     public int halfmoveClock() {
         return halfmoveClock;
     }
@@ -119,12 +120,12 @@ public final class GameState {
         this.halfmoveClock = halfmoveClock;
     }
 
-    /** The live list of {@code team}'s pieces that are off the board. */
+    /** Lista activa de las piezas de {@code team} que están fuera del tablero. */
     public List<Piece> bench(Team team) {
         return bench.get(team);
     }
 
-    // ---- Result ----------------------------------------------------------------------------------------
+    // ---- Resultado ------------------------------------------------------------------------------------
 
     public GameStatus status() {
         return status;
@@ -134,7 +135,7 @@ public final class GameState {
         return Optional.ofNullable(winner);
     }
 
-    /** Ends the game with the given result; {@code winner} is null for draws. */
+    /** Termina la partida con el resultado indicado; {@code winner} es null si son tablas. */
     public void finish(GameStatus status, Team winner) {
         if (!status.isOver()) {
             throw new IllegalArgumentException("finish() needs a final status, not " + status);
@@ -143,14 +144,14 @@ public final class GameState {
         this.winner = winner;
     }
 
-    // ---- Extensions and last move ----------------------------------------------------------------------
+    // ---- Extensiones y última jugada ------------------------------------------------------------------
 
     public <T> Optional<T> extension(String key, Class<T> type) {
         Object value = extensions.get(key);
         return type.isInstance(value) ? Optional.of(type.cast(value)) : Optional.empty();
     }
 
-    /** Stores an <em>immutable</em> value under a key; it will travel with every snapshot. */
+    /** Guarda un valor <em>inmutable</em> bajo una clave; se incluirá en cada copia del estado. */
     public void putExtension(String key, Object value) {
         extensions.put(Objects.requireNonNull(key, "key"), Objects.requireNonNull(value, "value"));
     }
@@ -167,7 +168,7 @@ public final class GameState {
         this.lastMove = null;
     }
 
-    // ---- Events ----------------------------------------------------------------------------------------
+    // ---- Eventos ---------------------------------------------------------------------------------------
 
     public void emit(GameEvent event) {
         pendingEvents.add(Objects.requireNonNull(event, "event"));
@@ -179,21 +180,21 @@ public final class GameState {
         return events;
     }
 
-    // ---- Position history (threefold repetition) -------------------------------------------------------
+    // ---- Historial de posiciones (repetición triple) --------------------------------------------------
 
-    /** Forgets all earlier positions. Used when an action makes earlier positions unreachable. */
+    /** Borra las posiciones anteriores. Se usa cuando una acción impide volver a ellas. */
     public void clearPositionHistory() {
         positionCounts.clear();
     }
 
-    /** Records the current position and returns how many times it has now occurred. */
+    /** Registra la posición actual y devuelve cuántas veces apareció hasta ahora. */
     public int recordCurrentPosition() {
         return positionCounts.merge(positionKey(), 1, Integer::sum);
     }
 
     /**
-     * Identity of the current position for repetition purposes: piece placement, side to move, castling
-     * rights, and the en passant square only when an en passant capture is actually possible.
+     * Identifica la posición para detectar repeticiones: ubicación de las piezas, bando al turno, derechos de
+     * enroque y casilla de captura al paso, solo si esa captura es posible.
      */
     public String positionKey() {
         return board.toString().replace('\n', '/')

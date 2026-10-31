@@ -1,17 +1,17 @@
 package ar.uade.tpo.chess.core.model;
 
-/** The kinds of move the standard rules distinguish, because each one changes the board differently. */
+/** Tipos de movimiento que distinguen las reglas estándar; cada uno modifica el tablero de forma distinta. */
 public enum MoveType {
-    /** A regular move or capture. */
+    /** Movimiento normal o captura. */
     NORMAL,
-    /** A pawn advancing two squares from its starting rank (opens the en passant window). */
+    /** El peón avanza dos casillas desde su posición inicial y habilita la captura al paso. */
     PAWN_DOUBLE_PUSH,
-    /** A pawn capturing a pawn that has just double-pushed past it. */
+    /** El peón captura al paso a otro que acaba de avanzar dos casillas. */
     EN_PASSANT,
-    /** King moves two squares towards the h-file rook (short castling). */
+    /** El rey avanza dos casillas hacia la torre de la columna h (enroque corto). */
     CASTLE_KINGSIDE,
-    /** King moves two squares towards the a-file rook (long castling). */
+    /** El rey avanza dos casillas hacia la torre de la columna a (enroque largo). */
     CASTLE_QUEENSIDE,
-    /** A pawn reaching the last rank, carrying the chosen {@link PieceType}. */
+    /** El peón llega a la última fila y se convierte en la pieza indicada por {@link PieceType}. */
     PROMOTION
 }

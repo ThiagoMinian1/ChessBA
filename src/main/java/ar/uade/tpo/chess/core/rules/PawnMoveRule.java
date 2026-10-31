@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Pawn: advances one square (two from its starting rank, if both are empty), captures one square diagonally
- * forward, may capture en passant, and promotes on the last rank. Each promotion is generated as four moves,
- * one per allowed target piece.
+ * Peón: avanza una casilla (o dos desde su fila inicial, si ambas están vacías), captura en diagonal hacia
+ * adelante, puede capturar al paso y promociona al llegar a la última fila. Se generan cuatro movimientos de
+ * promoción, uno por cada pieza permitida.
  */
 public final class PawnMoveRule implements MoveRule {
 
@@ -66,7 +66,7 @@ public final class PawnMoveRule implements MoveRule {
         if (context.enPassantTarget().filter(target::equals).isEmpty()) {
             return false;
         }
-        // The pawn to be captured stands beside this pawn, on the target's file.
+        // El peón que se captura está al lado, en la columna de la casilla objetivo.
         Position victimPosition = new Position(target.file(), from.rank());
         return context.board().pieceAt(victimPosition)
                 .filter(p -> p.type() == PieceType.PAWN && p.team() != team)

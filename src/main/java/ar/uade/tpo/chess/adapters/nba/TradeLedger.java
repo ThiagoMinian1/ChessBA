@@ -2,7 +2,7 @@ package ar.uade.tpo.chess.adapters.nba;
 
 import ar.uade.tpo.chess.core.model.Team;
 
-/** Which teams have already used their one trade, stored as an immutable value in the game state's extensions. */
+/** Registra qué bandos ya usaron su intercambio; es un valor inmutable de las extensiones del estado. */
 record TradeLedger(boolean whiteUsed, boolean blackUsed) {
 
     static TradeLedger fresh() {

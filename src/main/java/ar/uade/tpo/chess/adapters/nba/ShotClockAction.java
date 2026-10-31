@@ -11,20 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Decorator around a {@link TurnAction}: runs the wrapped action, then updates the acting team's shot clock
- * and, if the other team's clock has expired, skips that team's turn.
+ * Decorador de {@link TurnAction}: ejecuta la acción, actualiza el reloj del bando que jugó y, si el del rival
+ * venció, le salta el turno.
  *
- * <p>Because the clock update and the skip happen inside the same action, they are one entry in the history:
- * undoing the move also undoes the skip it caused.
+ * <p>El reloj y el salto de turno forman parte de la misma acción y ocupan una sola entrada en el historial.
+ * Al deshacer la jugada, también se revierte el salto de turno.
  *
- * <p>A turn is only skipped when it would leave the game in a sensible position: the team to be skipped is
- * not in check (skipping would leave its king unable to answer), and neither side is checkmated or stalemated.
+ * <p>El turno solo se salta si la posición sigue siendo válida: el bando afectado no está en jaque (de lo
+ * contrario no podría responder) y ninguno de los bandos está en jaque mate o ahogado.
  */
 final class ShotClockAction implements TurnAction {
 
     static final String KEY = "nba.shotclock";
 
-    /** Something worth telling a {@link ShotClockListener} once the action is committed. */
+    /** Aviso que se envía a {@link ShotClockListener} una vez confirmada la acción. */
     record Notification(Team team, boolean violation, int movesRemaining) {
     }
 

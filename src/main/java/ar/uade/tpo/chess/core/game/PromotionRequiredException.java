@@ -1,9 +1,9 @@
 package ar.uade.tpo.chess.core.game;
 
 /**
- * Thrown when a pawn move reaches the last rank but no promotion piece was chosen. It is an
- * {@link IllegalMoveException} so callers that don't care can treat it like any rejected move, while an
- * interactive adapter can catch it to ask the player which piece they want.
+ * Se lanza cuando un peón llega a la última fila sin que se haya elegido la pieza de promoción.
+ * Es una {@link IllegalMoveException}, así que quienes no necesiten tratarla por separado pueden considerarla
+ * una jugada rechazada; un adaptador interactivo puede capturarla y pedirle al jugador que elija una pieza.
  */
 public class PromotionRequiredException extends IllegalMoveException {
 

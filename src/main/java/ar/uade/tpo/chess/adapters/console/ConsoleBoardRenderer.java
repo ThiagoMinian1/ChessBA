@@ -5,9 +5,9 @@ import ar.uade.tpo.chess.core.model.Piece;
 import ar.uade.tpo.chess.core.model.Position;
 
 /**
- * Draws the board as plain ASCII from white's side: uppercase letters for white, lowercase for black,
- * {@code .} for an empty square. ASCII on purpose: it renders the same in every terminal. The themed piece
- * names are shown separately, in a legend.
+ * Dibuja el tablero en ASCII desde el lado de las blancas: mayúsculas para blancas, minúsculas para negras
+ * y {@code .} para las casillas vacías. Se usa ASCII para que se vea igual en cualquier terminal. Los nombres
+ * del tema elegido aparecen aparte, en una leyenda.
  */
 public final class ConsoleBoardRenderer {
 

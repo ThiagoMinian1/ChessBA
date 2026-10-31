@@ -4,18 +4,18 @@ import ar.uade.tpo.chess.core.game.ChessGame;
 import ar.uade.tpo.chess.core.game.Game;
 
 /**
- * Composition root for the NBA mechanics: builds a game and wraps it in the decorators the {@link GameConfig}
- * asks for. With the standard configuration it returns the plain core {@link Game}, untouched.
+ * Punto de composición de las mecánicas de la NBA: crea la partida y la envuelve con los decoradores indicados
+ * en {@link GameConfig}. Con la configuración estándar devuelve {@link Game} sin modificar.
  *
- * <p>Decorator order: the hot hand is outermost and the shot clock innermost, so after a move the streak
- * is evaluated first and the clock second, and the core then passes the turn. The two cooperate whichever
- * order they run in (a skipped turn already keeps the move with the same team, so no extra move is granted).
+ * <p>El decorador de mano caliente queda por fuera del reloj de posesión. Después de cada jugada se evalúa
+ * primero la racha y luego el reloj; por último, el núcleo pasa el turno. Ambos mecanismos funcionan en
+ * conjunto: si se salta un turno, el mismo bando ya conserva la jugada y no recibe otra adicional.
  *
- * <p>The scoreboard is outermost; it only adds points after captures and decides drawn games, so it works the
- * same in any position of the stack.
+ * <p>El marcador queda por fuera de los demás: suma puntos después de las capturas y resuelve las partidas
+ * empatadas, sin importar la posición de los otros decoradores.
  *
- * <p>The trade is not a decorator: it is a {@link TradeAction} that the front end submits when the config
- * enables it, so there is nothing to wrap.
+ * <p>El intercambio no es un decorador: cuando está habilitado, la interfaz envía una {@link TradeAction};
+ * no hay nada que envolver.
  */
 public final class NbaGameFactory {
 
@@ -26,7 +26,7 @@ public final class NbaGameFactory {
         return decorate(new Game(), config, shotClockListeners);
     }
 
-    /** Wraps an existing game (for example one built from a custom position). */
+    /** Envuelve una partida existente, por ejemplo, una creada desde una posición personalizada. */
     public static ChessGame decorate(ChessGame base, GameConfig config, ShotClockListener... shotClockListeners) {
         ChessGame game = base;
         if (config.shotClockEnabled()) {

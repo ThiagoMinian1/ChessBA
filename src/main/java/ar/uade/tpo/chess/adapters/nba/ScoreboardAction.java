@@ -9,11 +9,11 @@ import ar.uade.tpo.chess.core.model.Team;
 import java.util.List;
 
 /**
- * Decorator around a {@link TurnAction}: runs the wrapped action and, if it captured a piece, adds that piece's
- * conventional value (pawn 1, knight 3, bishop 3, rook 5, queen 9) to the capturing team's score.
+ * Decorador de {@link TurnAction}: ejecuta la acción y, si hubo una captura, suma al marcador del bando que
+ * capturó el valor habitual de la pieza (peón 1, caballo 3, alfil 3, torre 5 y dama 9).
  *
- * <p>The captured piece is read from the opponent's bench, where the core puts it (a captured promoted piece is
- * on the bench as its promoted type, so it scores as that piece). Trades and resignations never score.
+ * <p>La pieza capturada se consulta en el banco del rival, donde la guarda el núcleo. Si se capturó una pieza
+ * promocionada, cuenta con su tipo actual. Los intercambios y abandonos no suman puntos.
  */
 final class ScoreboardAction implements TurnAction {
 

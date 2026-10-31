@@ -2,7 +2,7 @@ package ar.uade.tpo.chess.adapters.nba;
 
 import ar.uade.tpo.chess.core.model.Team;
 
-/** Both teams' current capture streaks, stored as one immutable value in the game state's extensions. */
+/** Rachas de capturas actuales de ambos bandos, guardadas como un valor inmutable en las extensiones del estado. */
 record Streaks(int white, int black) {
 
     static Streaks fresh() {

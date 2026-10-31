@@ -7,12 +7,12 @@ import ar.uade.tpo.chess.ports.PieceTheme;
 import java.util.Objects;
 
 /**
- * Implementation of the {@link PieceTheme} port with an NBA look: each side plays as a {@link Franchise} and
- * its pieces are named after basketball roles, e.g. "Lakers Point Guard" or "Celtics Center". Purely
- * presentational - it changes no rule.
+ * Implementación del puerto {@link PieceTheme} con una apariencia de la NBA: cada bando representa una
+ * {@link Franchise} y sus piezas llevan nombres de posiciones de básquet, como «base de los Lakers» o
+ * «pívot de los Celtics». Es solo visual; no cambia ninguna regla.
  *
- * <p>Role mapping: king = Franchise Player, queen = Point Guard (the most mobile playmaker), rook = Center,
- * bishop = Small Forward, knight = Shooting Guard, pawn = Rookie. No real player names are used.
+ * <p>Roles: rey = jugador franquicia, dama = base (el armador más versátil), torre = pívot, alfil = alero,
+ * caballo = escolta y peón = novato. No se usan nombres de jugadores reales.
  */
 public final class NbaPieceTheme implements PieceTheme {
 
@@ -41,13 +41,13 @@ public final class NbaPieceTheme implements PieceTheme {
         return franchiseOf(team).nickname() + " " + roleName(type);
     }
 
-    /** Franchise abbreviation plus role code, e.g. "LAL-PG". */
+    /** Abreviatura de la franquicia y código del rol, por ejemplo, "LAL-PG". */
     @Override
     public String icon(PieceType type, Team team) {
         return franchiseOf(team).abbreviation() + "-" + roleCode(type);
     }
 
-    /** The basketball role a piece type stands for, e.g. "Point Guard" for the queen. */
+    /** Posición de básquet que representa cada pieza, por ejemplo, «base» para la dama. */
     public static String roleName(PieceType type) {
         return switch (type) {
             case KING -> "Franchise Player";

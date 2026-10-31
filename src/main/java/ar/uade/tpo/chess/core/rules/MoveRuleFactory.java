@@ -6,7 +6,7 @@ import ar.uade.tpo.chess.core.model.PieceType;
 import java.util.EnumMap;
 import java.util.Map;
 
-/** Factory that hands out the {@link MoveRule} (Strategy) for each kind of piece. */
+/** Fábrica que asigna una {@link MoveRule} (Strategy) a cada tipo de pieza. */
 public final class MoveRuleFactory {
 
     private static final Map<PieceType, MoveRule> RULES = new EnumMap<>(PieceType.class);

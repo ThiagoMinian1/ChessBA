@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.model;
 
-/** Creates pieces from a {@link PieceType}; used when promoting and when parsing diagrams. */
+/** Crea piezas a partir de un {@link PieceType}; se usa en promociones y al leer diagramas. */
 public final class PieceFactory {
 
     private PieceFactory() {

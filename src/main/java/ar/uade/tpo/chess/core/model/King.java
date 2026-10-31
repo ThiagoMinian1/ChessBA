@@ -20,7 +20,7 @@ public final class King extends Piece {
         return new King(team(), moved);
     }
 
-    /** The king is never exchanged, so it carries no material value. */
+    /** El rey nunca se intercambia, así que no tiene valor material. */
     @Override
     public int materialValue() {
         return 0;

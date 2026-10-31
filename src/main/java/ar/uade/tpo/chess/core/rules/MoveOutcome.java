@@ -6,11 +6,11 @@ import ar.uade.tpo.chess.core.model.Position;
 import java.util.Optional;
 
 /**
- * What applying a move did to the board.
+ * Resultado de aplicar un movimiento al tablero.
  *
- * @param movingPiece the piece that moved, as it was before moving (a promoting pawn is reported as the pawn)
- * @param captured    the captured piece, if any (for en passant, the pawn that was beside the mover)
- * @param capturedAt  where the captured piece stood (differs from the destination for en passant)
+ * @param movingPiece pieza que se movió antes de hacerlo (si promocionó, sigue siendo el peón)
+ * @param captured    pieza capturada, si hubo una (en la captura al paso, el peón que estaba al lado)
+ * @param capturedAt  casilla donde estaba la pieza capturada (distinta del destino en la captura al paso)
  */
 public record MoveOutcome(Piece movingPiece, Optional<Piece> captured, Optional<Position> capturedAt) {
 

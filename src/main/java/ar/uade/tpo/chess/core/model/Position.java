@@ -3,8 +3,8 @@ package ar.uade.tpo.chess.core.model;
 import java.util.Optional;
 
 /**
- * Coordinates of a cell on the 8x8 board. {@code file} 0..7 maps to a..h and {@code rank} 0..7 maps to 1..8,
- * so a1 is (0,0) and h8 is (7,7). A {@code Position} is always inside the board.
+ * Coordenadas de una casilla del tablero de 8x8. {@code file} de 0 a 7 corresponde a las columnas a-h y
+ * {@code rank} de 0 a 7 a las filas 1-8; así, a1 es (0,0) y h8 es (7,7). Toda {@code Position} está dentro del tablero.
  */
 public record Position(int file, int rank) {
 
@@ -20,7 +20,7 @@ public record Position(int file, int rank) {
         return file >= 0 && file < SIZE && rank >= 0 && rank < SIZE;
     }
 
-    /** Parses algebraic notation such as {@code "e4"} (case-insensitive file letter). */
+    /** Interpreta notación algebraica como {@code "e4"} (sin distinguir mayúsculas en la columna). */
     public static Position of(String algebraic) {
         if (algebraic == null || algebraic.length() != 2) {
             throw new IllegalArgumentException("Invalid square: " + algebraic);
@@ -37,12 +37,12 @@ public record Position(int file, int rank) {
         return inBounds(file, rank) ? Optional.of(new Position(file, rank)) : Optional.empty();
     }
 
-    /** The position {@code df} files and {@code dr} ranks away, or empty if that falls off the board. */
+    /** Posición a {@code df} columnas y {@code dr} filas de distancia, o vacío si queda fuera del tablero. */
     public Optional<Position> offset(int df, int dr) {
         return tryOf(file + df, rank + dr);
     }
 
-    /** True for light squares (h1 and a8 are light; a1 is dark). */
+    /** Indica si es una casilla clara (h1 y a8 son claras; a1 es oscura). */
     public boolean isLightSquare() {
         return (file + rank) % 2 == 1;
     }

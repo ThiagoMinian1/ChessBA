@@ -23,13 +23,13 @@ class MaterialCheckerTest {
 
     @Test
     void bishopsOnTheSameColourAreInsufficientEvenOnOppositeSides() {
-        // c1 and f8 are both dark squares.
+        // c1 y f8 son casillas oscuras.
         assertTrue(MaterialChecker.isInsufficientMaterial(boardOf("Ke1", "Bc1", "ke8", "bf8")));
     }
 
     @Test
     void bishopsOnOppositeColoursCanStillMate() {
-        // c1 is dark, c8 is light.
+        // c1 es oscura y c8 es clara.
         assertFalse(MaterialChecker.isInsufficientMaterial(boardOf("Ke1", "Bc1", "ke8", "bc8")));
     }
 

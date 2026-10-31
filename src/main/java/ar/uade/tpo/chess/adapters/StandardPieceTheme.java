@@ -6,7 +6,7 @@ import ar.uade.tpo.chess.ports.PieceTheme;
 
 import java.util.Locale;
 
-/** The plain, unthemed {@link PieceTheme}: "White Knight", icon {@code N} (uppercase white, lowercase black). */
+/** Tema simple de {@link PieceTheme}: «Caballo blanco» e icono {@code N} (mayúscula para blancas y minúscula para negras). */
 public final class StandardPieceTheme implements PieceTheme {
 
     @Override

@@ -19,15 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Castling rules (chess.com): neither king nor rook has moved; the squares between them are empty; the king is
- * not in check; and the king neither crosses nor lands on an attacked square. Each condition is tested alone.
- * The black king sits on d7, which no white piece in these positions attacks.
+ * Reglas de enroque (chess.com): ni el rey ni la torre se movieron, las casillas entre ambos están vacías,
+ * el rey no está en jaque ni atraviesa o termina en una casilla atacada. Cada condición se prueba por separado.
+ * En estas posiciones, ninguna pieza blanca ataca al rey negro de d7.
  */
 class CastlingTest {
 
     private static final String[] BASE = {"Ke1", "Ra1", "Rh1", "kd7"};
 
-    /** Destination squares of the castling moves available to white from e1 in BASE plus the extra pieces. */
+    /** Casillas de destino de los enroques disponibles para las blancas desde e1, con BASE y las piezas adicionales. */
     private static Set<String> whiteCastles(String... extra) {
         List<String> placements = new ArrayList<>(List.of(BASE));
         placements.addAll(List.of(extra));
@@ -41,7 +41,7 @@ class CastlingTest {
         return result;
     }
 
-    // ---- The two castles -------------------------------------------------------------------------------
+    // ---- Los dos enroques ------------------------------------------------------------------------------
 
     @Test
     void bothCastlesAreAvailableWhenNothingGetsInTheWay() {
@@ -94,7 +94,7 @@ class CastlingTest {
         assertTrue(castles.stream().anyMatch(m -> m.type() == MoveType.CASTLE_QUEENSIDE));
     }
 
-    // ---- Pieces that have moved ------------------------------------------------------------------------
+    // ---- Piezas que ya se movieron ---------------------------------------------------------------------
 
     @Test
     void aKingThatMovedAndCameBackCannotCastle() {
@@ -134,7 +134,7 @@ class CastlingTest {
         assertTrue(game.legalMovesFrom(pos("g1")).stream().noneMatch(Move::isCastling));
     }
 
-    // ---- Squares between king and rook must be empty ---------------------------------------------------
+    // ---- Casillas entre el rey y la torre ---------------------------------------------------------------
 
     @Test
     void pieceBetweenKingAndRookBlocksThatCastleOnly() {
@@ -151,7 +151,7 @@ class CastlingTest {
         assertEquals(Set.of("c1"), whiteCastles("ng1"));
     }
 
-    // ---- The king may not castle out of, through or into check -----------------------------------------
+    // ---- El rey no puede enrocar desde, a través de ni hacia un jaque ----------------------------------
 
     @Test
     void cannotCastleOutOfCheck() {

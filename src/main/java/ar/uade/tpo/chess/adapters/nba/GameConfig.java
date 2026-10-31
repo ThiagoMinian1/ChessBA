@@ -1,17 +1,16 @@
 package ar.uade.tpo.chess.adapters.nba;
 
 /**
- * Which optional NBA mechanics are switched on. With everything off ({@link #standard()}) the game is pure
- * standard chess. Immutable; build with {@link #builder()}.
+ * Indica qué mecánicas opcionales de la NBA están activas. Si todas están desactivadas ({@link #standard()}),
+ * la partida sigue las reglas estándar del ajedrez. Es inmutable y se crea con {@link #builder()}.
  *
- * <p>Each flag maps to one mechanic that lives entirely in this adapter package:
- * the shot clock ({@link ShotClockGame}), the trade ({@link TradeAction}), the hot hand ({@link HotHandGame})
- * and the scoreboard ({@link ScoreboardGame}).
+ * <p>Cada opción corresponde a una mecánica de este paquete: el reloj de posesión ({@link ShotClockGame}),
+ * el intercambio ({@link TradeAction}), la mano caliente ({@link HotHandGame}) y el marcador ({@link ScoreboardGame}).
  */
 public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean tradeEnabled, boolean hotHandEnabled,
                          boolean scoreboardEnabled) {
 
-    /** Own moves without capturing or advancing a pawn before a team loses its turn. */
+    /** Jugadas propias sin capturas ni avances de peón antes de perder el turno. */
     public static final int DEFAULT_SHOT_CLOCK_LIMIT = 10;
 
     public GameConfig {
@@ -20,7 +19,7 @@ public record GameConfig(boolean shotClockEnabled, int shotClockLimit, boolean t
         }
     }
 
-    /** No mechanics: standard chess. */
+    /** Sin mecánicas adicionales: ajedrez estándar. */
     public static GameConfig standard() {
         return new GameConfig(false, DEFAULT_SHOT_CLOCK_LIMIT, false, false, false);
     }

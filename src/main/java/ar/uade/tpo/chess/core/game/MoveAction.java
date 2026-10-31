@@ -12,8 +12,8 @@ import ar.uade.tpo.chess.core.rules.MoveOutcome;
 import java.util.Objects;
 
 /**
- * The standard chess action: play one legal move and pass the turn to the other side.
- * This is where turn alternation lives in the core.
+ * Acción estándar del ajedrez: realiza una jugada legal y pasa el turno al otro bando.
+ * Aquí se define la alternancia de turnos del núcleo.
  */
 public final class MoveAction implements TurnAction {
 
@@ -55,7 +55,7 @@ public final class MoveAction implements TurnAction {
         }
     }
 
-    /** The square a double-pushing pawn passed over: same file, halfway between the two ranks. */
+    /** Casilla que saltó el peón al avanzar dos posiciones: misma columna, a mitad de camino entre ambas filas. */
     private Position skippedSquare() {
         return new Position(move.from().file(), (move.from().rank() + move.to().rank()) / 2);
     }

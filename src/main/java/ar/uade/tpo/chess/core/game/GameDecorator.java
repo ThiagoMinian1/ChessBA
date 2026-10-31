@@ -13,11 +13,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Decorator base: forwards everything to the wrapped game. A concrete decorator overrides only
- * {@link #execute(TurnAction)} (typically to wrap the action in one that adds behaviour) and leaves the rest.
+ * Decorador base: delega todo en la partida envuelta. Cada decorador concreto solo redefine
+ * {@link #execute(TurnAction)} —normalmente para agregar comportamiento a la acción— y deja el resto igual.
  *
- * <p>It deliberately does not override {@code play(...)}: those are default methods that call
- * {@code execute} on {@code this}, so the outermost decorator always sees the action first.
+ * <p>No redefine {@code play(...)} a propósito: esos métodos predeterminados llaman a {@code execute} sobre
+ * {@code this}, así que la acción pasa primero por el decorador más externo.
  */
 public abstract class GameDecorator implements ChessGame {
 

@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Base for pieces that slide any number of squares along fixed directions until blocked (rook, bishop, queen).
- * A subclass only declares its directions.
+ * Base para piezas que avanzan en una dirección hasta encontrar un obstáculo (torre, alfil y dama).
+ * Cada subclase indica sus direcciones.
  */
 abstract class LinearMoveRule implements MoveRule {
 

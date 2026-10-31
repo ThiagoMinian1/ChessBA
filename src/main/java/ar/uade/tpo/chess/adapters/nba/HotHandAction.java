@@ -8,15 +8,13 @@ import ar.uade.tpo.chess.core.model.Team;
 import ar.uade.tpo.chess.core.rules.MoveGenerator;
 
 /**
- * Decorator around a {@link TurnAction}: runs the wrapped action, then updates the acting team's capture
- * streak and, when the streak reaches {@link HotHandGame#STREAK_TO_IGNITE}, keeps the turn with the same team
- * so it moves again.
+ * Decorador de {@link TurnAction}: ejecuta la acción y actualiza la racha de capturas del bando que jugó.
+ * Cuando llega a {@link HotHandGame#STREAK_TO_IGNITE}, ese bando conserva el turno y vuelve a jugar.
  *
- * <p>The streak counts the team's own consecutive captures: any own action that is not a capture
- * (including a trade) resets it, and the opponent's moves do not. Reaching the target always resets the streak;
- * the bonus move is granted only if it makes sense: the opponent is not in check (it would have to answer the
- * check immediately), the opponent still has a legal move, the team itself has a legal move, and the turn was
- * not already kept by another mechanic (a shot-clock skip).
+ * <p>La racha cuenta las capturas consecutivas del mismo bando: cualquier acción propia que no capture (incluido
+ * un intercambio) la reinicia; las jugadas del rival no la afectan. Al llegar al objetivo, la racha se reinicia.
+ * La jugada extra solo se concede si el rival no está en jaque, ambos bandos tienen jugadas legales y otra
+ * mecánica no mantuvo ya el turno (por ejemplo, al saltarse un turno por el reloj).
  */
 final class HotHandAction implements TurnAction {
 

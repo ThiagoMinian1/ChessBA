@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Base for pieces that jump to a fixed set of offsets, ignoring anything in between (knight, king).
- * A subclass only declares its offsets.
+ * Base para piezas que saltan a posiciones definidas, sin importar qué haya en el medio (caballo y rey).
+ * Cada subclase indica sus desplazamientos.
  */
 abstract class StepMoveRule implements MoveRule {
 

@@ -1,25 +1,26 @@
 package ar.uade.tpo.chess.adapters.nba;
 
 /**
- * State pattern for one team's shot clock. A clock is always in exactly one state, and each state decides
- * what the next state is after the team makes a move:
+ * Patrón State para el reloj de posesión de un bando. El reloj siempre está en un único estado y cada estado
+ * determina cuál sigue después de una jugada:
  * <ul>
- *   <li>{@link Running}: plenty of moves left;</li>
- *   <li>{@link Warning}: only a few moves left before the clock expires;</li>
- *   <li>{@link Expired}: the limit has been reached; the team's next turn will be skipped.</li>
+ *   <li>{@link Running}: quedan varias jugadas;</li>
+ *   <li>{@link Warning}: quedan pocas jugadas antes de que venza el reloj;</li>
+ *   <li>{@link Expired}: se alcanzó el límite y se saltará el siguiente turno del bando.</li>
  * </ul>
- * "Progress" means capturing a piece or moving a pawn; it sends any state back to a fresh {@link Running} clock.
- * States are immutable values, so they can live in game snapshots and be undone for free.
+ * Se considera que hay progreso cuando se captura una pieza o se mueve un peón; esto reinicia el reloj con un
+ * {@link Running} nuevo. Los estados son inmutables, así que se guardan en las copias de la partida y se
+ * restauran al deshacer una jugada.
  */
 public sealed interface ShotClockState {
 
-    /** Moves left at or below which a clock reports a warning. */
+    /** Jugadas restantes a partir de las que se avisa que el reloj está por vencer. */
     int WARNING_WINDOW = 3;
 
-    /** Own moves made since the team last made progress. */
+    /** Jugadas propias desde el último progreso del bando. */
     int movesWithoutProgress();
 
-    /** The state after the team makes one of its own moves. */
+    /** Estado que queda después de una jugada propia. */
     ShotClockState afterOwnMove(boolean progress, int limit);
 
     static ShotClockState fresh() {
@@ -59,8 +60,8 @@ public sealed interface ShotClockState {
     }
 
     /**
-     * The limit was reached. It stays expired until the team makes progress or its turn is skipped
-     * (a skip can be postponed while the team is in check).
+     * Se alcanzó el límite. El reloj sigue vencido hasta que el bando progrese o se salte su turno
+     * (el salto puede posponerse si está en jaque).
      */
     record Expired(int movesWithoutProgress) implements ShotClockState {
         @Override

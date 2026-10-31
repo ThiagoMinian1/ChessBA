@@ -107,7 +107,7 @@ class HotHandGameTest {
         assertEquals(1, HotHandGame.streakOf(game, Team.BLACK));
     }
 
-    // ---- Mechanic off ----------------------------------------------------------------------------------
+    // ---- Mecánica desactivada --------------------------------------------------------------------------
 
     @Test
     void withoutTheMechanicTwoCapturesDoNotChangeTheTurnOrder() {

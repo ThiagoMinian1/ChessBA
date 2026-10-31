@@ -9,9 +9,9 @@ import ar.uade.tpo.chess.core.model.Position;
 import java.util.Optional;
 
 /**
- * Applies an already-validated {@link Move} to a {@link Board}, doing everything the move type implies:
- * removing the captured piece (including the pawn taken en passant), relocating the rook when castling,
- * and swapping in the promoted piece. Moved pieces are flagged as moved, which is what ends castling rights.
+ * Aplica a un {@link Board} un movimiento ya validado y realiza los cambios que correspondan: retira la pieza
+ * capturada (también en la captura al paso), mueve la torre en el enroque y reemplaza el peón al promocionar.
+ * Las piezas movidas quedan marcadas como tales, lo que elimina el derecho a enrocar.
  */
 public final class MoveApplier {
 
@@ -23,7 +23,7 @@ public final class MoveApplier {
     private MoveApplier() {
     }
 
-    /** Mutates {@code board}. Does not check legality. */
+    /** Modifica {@code board}. No comprueba si el movimiento es legal. */
     public static MoveOutcome apply(Board board, Move move) {
         Piece piece = board.pieceAt(move.from())
                 .orElseThrow(() -> new IllegalArgumentException("No piece at " + move.from()));

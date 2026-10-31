@@ -15,20 +15,20 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Standard chess, and nothing else. It owns the current {@link GameState}, runs every {@link TurnAction}
- * atomically, keeps the undo/redo history, decides after each action whether the game has ended, and tells
- * its observers what happened.
+ * Ajedrez estándar, sin reglas adicionales. Mantiene el {@link GameState}, ejecuta cada {@link TurnAction}
+ * de forma atómica, guarda el historial para deshacer y rehacer, determina si la partida terminó y avisa
+ * a sus observadores de lo ocurrido.
  *
- * <p>How an action runs: copy the state; run the action on the copy (if it throws, nothing changed);
- * record the new position; evaluate checkmate, stalemate and the draw conditions; then install the copy,
- * store a before/after {@link GameMemento} pair, and notify observers.
+ * <p>Para ejecutar una acción, primero se copia el estado y se aplica sobre esa copia. Si falla, no cambia nada.
+ * Luego se registra la posición, se comprueban el jaque mate, el ahogado y las condiciones de tablas, y se
+ * guarda el estado junto con su copia anterior antes de avisar a los observadores.
  */
 public class Game implements ChessGame {
 
-    /** The number of half-moves without a capture or pawn move after which the game is drawn. */
+    /** Medias jugadas sin capturas ni movimientos de peón necesarias para declarar tablas. */
     public static final int FIFTY_MOVE_HALF_MOVES = 100;
 
-    /** How many times the same position must occur for a draw by repetition. */
+    /** Veces que debe repetirse una posición para declarar tablas por repetición. */
     public static final int REPETITION_LIMIT = 3;
 
     private record HistoryEntry(TurnAction action, GameMemento before, GameMemento after) {
@@ -39,12 +39,12 @@ public class Game implements ChessGame {
     private int cursor;
     private final List<GameObserver> observers = new ArrayList<>();
 
-    /** A new game from the standard starting position. */
+    /** Crea una partida desde la posición inicial estándar. */
     public Game() {
         this(GameState.initial());
     }
 
-    /** A game starting from a custom state (the state is copied). Used for puzzles and tests. */
+    /** Crea una partida desde un estado personalizado (se copia el estado). Se usa en problemas y pruebas. */
     public Game(GameState initial) {
         GameState start = initial.copy();
         start.clearPositionHistory();
@@ -55,7 +55,7 @@ public class Game implements ChessGame {
         this.state = start;
     }
 
-    // ---- Queries ---------------------------------------------------------------------------------------
+    // ---- Consultas -------------------------------------------------------------------------------------
 
     @Override
     public Team currentTurn() {
@@ -119,7 +119,7 @@ public class Game implements ChessGame {
         return history.subList(0, cursor).stream().map(entry -> entry.action().describe()).toList();
     }
 
-    // ---- Commands --------------------------------------------------------------------------------------
+    // ---- Acciones --------------------------------------------------------------------------------------
 
     @Override
     public void execute(TurnAction action) {
@@ -186,12 +186,12 @@ public class Game implements ChessGame {
         observers.remove(observer);
     }
 
-    // ---- Internals -------------------------------------------------------------------------------------
+    // ---- Métodos internos ------------------------------------------------------------------------------
 
-    /** After an action: record the position and decide whether the game just ended or a check was given. */
+    /** Después de una acción, registra la posición y comprueba si terminó la partida o se dio jaque. */
     private void settle(GameState working) {
         if (working.status().isOver()) {
-            return; // the action itself ended the game (resignation, agreed draw)
+            return; // La acción terminó la partida (abandono o tablas acordadas).
         }
         int occurrences = working.recordCurrentPosition();
         evaluate(working, occurrences);
@@ -201,8 +201,8 @@ public class Game implements ChessGame {
     }
 
     /**
-     * Sets the final status if the side to move is checkmated or stalemated, or the position is drawn.
-     * Checkmate takes precedence over every draw condition, as in standard rules.
+     * Define el resultado final si el bando al que le toca está en jaque mate o ahogado, o si la posición es tablas.
+     * Como en las reglas estándar, el jaque mate tiene prioridad sobre cualquier condición de tablas.
      */
     private static void evaluate(GameState s, int occurrences) {
         Team toMove = s.turn();

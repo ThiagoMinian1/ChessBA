@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.rules;
 
-/** Rook: any distance along ranks and files. */
+/** Torre: se desplaza cualquier cantidad de casillas en filas y columnas. */
 public final class RookMoveRule extends LinearMoveRule {
 
     @Override

@@ -7,10 +7,10 @@ import ar.uade.tpo.chess.core.model.PlacedPiece;
 import java.util.List;
 
 /**
- * Detects "insufficient material": positions in which no sequence of legal moves can produce checkmate.
- * Following chess.com, these are: king vs king; king and one minor piece (bishop or knight) vs king; and
- * positions where the only pieces besides the kings are bishops that all stand on squares of the same colour
- * (which includes king and bishop vs king and bishop with same-coloured bishops).
+ * Detecta las posiciones de «material insuficiente», en las que ninguna secuencia de jugadas legales puede dar
+ * jaque mate. Según chess.com, son: rey contra rey; rey y una pieza menor (alfil o caballo) contra rey; y
+ * posiciones donde, aparte de los reyes, solo quedan alfiles ubicados en casillas del mismo color.
+ * Esto incluye rey y alfil contra rey y alfil cuando ambos alfiles son del mismo color.
  */
 public final class MaterialChecker {
 

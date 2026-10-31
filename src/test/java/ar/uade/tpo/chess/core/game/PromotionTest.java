@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PromotionTest {
 
     private static Game whitePawnOnSeventh() {
-        // The extra pawn keeps the game going when the pawn promotes to a lone knight or bishop.
+        // El peón adicional evita que termine la partida si el peón promociona a un caballo o alfil solitario.
         return gameOf(Team.WHITE, "Ka1", "kh6", "Pe7", "Pa3");
     }
 

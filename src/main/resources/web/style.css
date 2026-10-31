@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* ChessBA · premium sports interface. One palette, one spacing scale. */
+/* Interfaz deportiva de ChessBA. Una paleta y una escala de espaciado. */
 :root {
   color-scheme: dark;
   --canvas: #131313;
@@ -28,7 +28,7 @@ button:disabled:hover { filter: none; }
 [hidden] { display: none !important; }
 i { display: inline-block; }
 
-/* Navigation: compact, quiet, always secondary to the board. */
+/* Navegación compacta y discreta, siempre en segundo plano respecto al tablero. */
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 92px; z-index: 2; background: #161616; border-right: 1px solid #ffffff06; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; }
 .brand { color: var(--text); text-decoration: none; display: flex; align-items: center; }
 .brand-emblem { display: block; width: 45px; height: 45px; padding: 5px; border-radius: 10px; background: var(--orange); }
@@ -70,7 +70,7 @@ h1 > span { color: var(--orange); }
 .board-column, .right-column { min-width: 0; }
 .right-column { display: grid; gap: 15px; }
 
-/* A single matchup, then the board. No repeated scoreboard. */
+/* Un solo enfrentamiento antes del tablero, sin repetir el marcador. */
 .board-stage { background: var(--surface); padding: 16px; border: 1px solid #ffffff06; border-radius: var(--radius); }
 .stage-topline { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
 .stage-label { display: flex; align-items: center; gap: 6px; font-size: 8px; color: #939393; font-weight: 600; letter-spacing: 1px; }
@@ -120,7 +120,7 @@ h1 > span { color: var(--orange); }
 .skin-toggle { padding: 6px 8px; border: 1px solid #393939; border-radius: 4px; font-size: 8px; font-weight: 550; background: transparent; color: #969696; }
 .skin-toggle[aria-pressed=true] { color: #ffc4ad; background: #ff794b0c; border-color: #ff794b35; }
 
-/* Match controls and history have one clear hierarchy. */
+/* Controles e historial de la partida, con una jerarquía clara. */
 .game-panel { background: var(--surface); border: 1px solid #ffffff06; border-radius: var(--radius); padding: 23px; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .panel-heading .eyebrow { font-size: 11px; letter-spacing: 0; color: #a1a1a1; font-weight: 500; }
@@ -161,7 +161,7 @@ h1 > span { color: var(--orange); }
 .bench-piece:disabled { opacity: .55; }
 #benchTab { min-height: 230px; }
 
-/* NBA details: real game values, restrained use of franchise color. */
+/* Detalles de la NBA: datos reales y uso moderado de los colores de cada franquicia. */
 .mechanics:empty { display: none; }
 .mechanics { display: grid; gap: 0; border: 1px solid #2b2b2b; border-radius: 8px; overflow: hidden; }
 .nba-stat { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px; border: 0; border-bottom: 1px solid #2b2b2b; background: var(--surface); }
@@ -186,7 +186,7 @@ h1 > span { color: var(--orange); }
 .nba-cta b { color: #d99b80; font-size: 19px; font-weight: 400; align-self: center; }
 .cta-ball { display: block; position: relative; width: 29px; height: 29px; border: 1px solid #e38c68; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: linear-gradient(90deg, transparent 48%, #e38c68 48%, #e38c68 52%, transparent 52%), linear-gradient(0deg, transparent 48%, #e38c68 48%, #e38c68 52%, transparent 52%); }
 .cta-ball::after { content: ""; position: absolute; width: 23px; height: 29px; top: -1px; left: -12px; border: 1px solid #e38c68; border-radius: 50%; }
-/* Coaching is contextual, never a second hero section. */
+/* Las indicaciones aparecen cuando hacen falta y no compiten con el tablero. */
 .learn-guide { display: flex; align-items: flex-start; gap: 13px; padding: 22px 4px 0; }
 .learn-icon { width: 30px; height: 36px; flex-shrink: 0; margin-top: 3px; opacity: .55; }
 .learn-icon .piece { width: 100%; height: 100%; }
@@ -197,7 +197,7 @@ h1 > span { color: var(--orange); }
 .help-link { background: none; border: 0; padding: 4px 0; color: #a7a7a7; font-size: 9px; white-space: nowrap; margin-top: 13px; }
 .help-link:hover { color: #e9c1ad; }
 
-/* Dialogs use the same visual language and spacing as the main application. */
+/* Los diálogos mantienen el estilo y el espaciado del resto de la aplicación. */
 dialog { color-scheme: dark; width: calc(100% - 32px); max-width: 610px; max-height: 90dvh; overflow-y: auto; border: 1px solid #404040; border-radius: 14px; background: #1e1e1e; color: #f3f3f3; padding: 30px; box-shadow: 0 30px 110px #0006; }
 dialog::backdrop { background: #0d0d0dbb; backdrop-filter: blur(7px); }
 .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
@@ -245,7 +245,7 @@ select { width: 100%; margin-top: 9px; padding: 11px 7px; border: 1px solid #545
 .square.capture-flash { animation: capture-light .4s ease-out; }
 @keyframes capture-light { from { box-shadow: inset 0 0 0 4px #ffb58d; } to { box-shadow: inset 0 0 0 0 #ffb58d00; } }
 
-/* Chess silhouettes remain intact; the uniform is fitted around the body. */
+/* Se conserva la silueta de las piezas y se adapta el uniforme a su forma. */
 .piece.dressed-piece .piece-kit-body { fill: var(--team-color,#a5a8ae); stroke: #22272d; stroke-width: .7; }
 .piece.dressed-piece .piece-kit-trim { fill: none; stroke: var(--jersey-ink,#f4f4f4); stroke-width: .8; opacity: .9; }
 .piece-kit-logo { pointer-events: none; }
@@ -254,7 +254,7 @@ select { width: 100%; margin-top: 9px; padding: 11px 7px; border: 1px solid #545
 .piece-key-item > .piece { width: 25px; height: 29px; flex-shrink: 0; }
 .roster-legend > small { grid-column: 1/-1; font-size: 9px; line-height: 1.6; color: #909090; margin-top: 5px; }
 
-/* Original franchise monograms, not official team logos. */
+/* Monogramas propios de cada franquicia, no son los logos oficiales. */
 [data-franchise=WHT] { --team-color: #dce5f3; --jersey-ink: #374c6c; }
 [data-franchise=BLK] { --team-color: #6f89ac; --jersey-ink: #ebf3ff; }
 [data-franchise=LAL] { --team-color: #edc153; --jersey-ink: #522a78; }
@@ -404,7 +404,7 @@ select { width: 100%; margin-top: 9px; padding: 11px 7px; border: 1px solid #545
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* Short, event-driven feedback. Effects never intercept board input. */
+/* Respuestas breves a cada evento. Los efectos no bloquean la interacción con el tablero. */
 .board-frame { position: relative; }
 .square.selected .piece { transform: translateY(-3px); transition: transform .12s ease-out; }
 body[data-effects=off] .square.selected .piece { transform: none; }
@@ -433,7 +433,7 @@ body[data-effects=off] .square.selected .piece { transform: none; }
 body[data-effects=off] .capture-point, body[data-effects=off] .capture-ring, body[data-effects=off] .capture-spark { display: none; }
 body[data-effects=off] .square.capture-flash { animation: none; }
 
-/* All action icons share the same size, stroke and baseline. */
+/* Los iconos de acción comparten tamaño, trazo y alineación. */
 .control-icon { display: block; width: 17px; height: 17px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .icon-button { display: inline-flex; align-items: center; justify-content: center; }
 .history-controls button, .game-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
@@ -449,7 +449,7 @@ body[data-effects=off] .square.capture-flash { animation: none; }
  .skin-toggle { min-height: 34px; padding: 6px 10px; font-size: 9px; }
 }
 
-/* Court palette and vertical parquet follow the supplied court reference. */
+/* La paleta y el parquet vertical siguen la referencia de la cancha. */
 .board-frame { background-color: #c89b61; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160%22%20height%3D%22240%22%20viewBox%3D%220%200%20160%20240%22%3E%3Crect%20x%3D%220%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23cc9d61%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%2245%22%20width%3D%2218%22%20height%3D%2255%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M0%200v240M0%2045h20M0%20130h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M7%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%2220%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23d2a66f%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%2274%22%20width%3D%2218%22%20height%3D%2268%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M20%200v240M20%2074h20M20%20159h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M27%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%2240%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23bc8a4c%22%2F%3E%3Crect%20x%3D%2241%22%20y%3D%22103%22%20width%3D%2218%22%20height%3D%2281%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M40%200v240M40%20103h20M40%20188h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M47%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%2260%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23d6ae79%22%2F%3E%3Crect%20x%3D%2261%22%20y%3D%22132%22%20width%3D%2218%22%20height%3D%2294%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M60%200v240M60%20132h20M60%20217h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M67%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%2280%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23c39355%22%2F%3E%3Crect%20x%3D%2281%22%20y%3D%2266%22%20width%3D%2218%22%20height%3D%22107%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M80%200v240M80%2066h20M80%20151h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M87%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%22100%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23d0a06a%22%2F%3E%3Crect%20x%3D%22101%22%20y%3D%2295%22%20width%3D%2218%22%20height%3D%22120%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M100%200v240M100%2095h20M100%20180h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M107%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%22120%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23bb894d%22%2F%3E%3Crect%20x%3D%22121%22%20y%3D%22124%22%20width%3D%2218%22%20height%3D%22133%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M120%200v240M120%20124h20M120%20209h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M127%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3Crect%20x%3D%22140%22%20width%3D%2220%22%20height%3D%22240%22%20fill%3D%22%23d9b27f%22%2F%3E%3Crect%20x%3D%22141%22%20y%3D%2258%22%20width%3D%2218%22%20height%3D%2266%22%20fill%3D%22%23f1cea0%22%20opacity%3D%22.18%22%2F%3E%3Cpath%20d%3D%22M140%200v240M140%2058h20M140%20143h20%22%20stroke%3D%22%238d642f%22%20stroke-width%3D%22.5%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M147%209q-2%2038%201%2070t0%2087%22%20fill%3D%22none%22%20stroke%3D%22%23a8783d%22%20stroke-width%3D%22.4%22%20opacity%3D%22.16%22%2F%3E%3C%2Fsvg%3E"); background-size: 160px 240px; border: 6px solid #a47136; border-radius: 3px; }
 .court-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; user-select: none; }
 .court-paint { fill: #b8762d; opacity: .2; }
@@ -461,7 +461,7 @@ body[data-effects=off] .square.capture-flash { animation: none; }
 .court-logo-sub { font: 650 6px var(--font); letter-spacing: 1.1px; fill: #66431e; }
 #courtLogo { opacity: .36; pointer-events: none; }
 .court-baselines { text-anchor: middle; fill: #fff4db; opacity: .75; font: 650 6px var(--font); letter-spacing: 1.5px; }
-/* Logos use NBA's own image endpoint; the code remains a fallback if offline. */
+/* Se usan imágenes del sitio de la NBA; el código queda como alternativa si no hay conexión. */
 .franchise-logo { display: block; width: 100%; height: 100%; object-fit: contain; position: absolute; inset: 0; padding: 4px; opacity: 0; }
 .team-mark.has-logo { background: #efeeeb; border-color: #ffffff12; }
 .team-mark.has-logo .franchise-logo { opacity: 1; }
@@ -484,7 +484,7 @@ body[data-effects=off] .square.capture-flash { animation: none; }
 .team-option:disabled { opacity: .3; }
 @media(max-width:480px) { .team-selects { grid-template-columns:1fr; gap:17px; } .team-picker-options { max-height:190px; } }
 
-/* The board shares the reference court's 5:8 ratio. SVG pieces keep their shape. */
+/* El tablero respeta la proporción 5:8 de la cancha de referencia. Las piezas SVG mantienen su forma. */
 .capture-point { position: absolute; left: 50%; top: 18%; z-index: 4; color: #fff8e8; font: 800 25px/1 var(--font); letter-spacing: -1px; text-shadow: 0 2px 0 #b56b2f, 0 3px 12px #482b1766; pointer-events: none; transform: translateX(-50%); animation: capture-score 1s cubic-bezier(.2,.65,.3,1) both; }
 @keyframes capture-score { 0% { opacity: 0; transform: translate(-50%,12px) scale(.7); } 18% { opacity: 1; transform: translate(-50%,-3px) scale(1.15); } 45% { opacity: 1; transform: translate(-50%,-15px) scale(1); } 100% { opacity: 0; transform: translate(-50%,-52px) scale(.95); } }
 .arena-audio { border: 1px solid #303030; border-radius: 8px; padding: 15px; background: var(--surface); }
@@ -504,25 +504,25 @@ body[data-effects=off] .square.capture-flash { animation: none; }
 }
 @media(prefers-reduced-motion:reduce) { .capture-point { animation: none; opacity: 1; } }
 
-/* Entry menu and final score share the same session and server-owned result. */
+/* El menú inicial y el resultado final comparten la sesión y el resultado del servidor. */
 .heading-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.heading-actions .secondary{padding:11px 12px;font-size:11px}
 .home-screen{padding:45px 0 60px;min-height:calc(100dvh - 130px)}.home-intro{max-width:640px;margin-bottom:35px}.home-intro>.eyebrow{color:var(--orange);font-size:10px}.home-intro h1{font-size:46px;letter-spacing:-1.8px;margin:15px 0}.home-intro p{color:#a1a1a1;font-size:14px;line-height:1.8;margin:0}.home-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.home-mode{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:300px;background:var(--surface);border:1px solid #353535;border-radius:12px;padding:25px;color:var(--text)}.home-mode:hover:not(:disabled){background:#24211f;border-color:#b47a56}.home-mode.featured{border-color:#ff794b66;background:linear-gradient(135deg,#ff794b0e,#1b1b1b 65%)}.home-mode>.eyebrow{font-size:8px;color:#a8a8a8;margin:18px 0 10px}.home-mode strong{font-size:20px;line-height:1.3;letter-spacing:-.5px;font-weight:600}.home-mode p{color:#999;font-size:12px;line-height:1.8;margin:12px 0 24px}.home-mode-link{display:flex;justify-content:space-between;align-items:center;gap:20px;width:100%;margin-top:auto;color:#e5b49c;font-size:11px;font-weight:550}.home-mode-link b{font-weight:400;font-size:18px}.home-teams{display:flex;gap:9px;align-items:center;height:52px}.home-teams>.team-mark{width:47px;height:47px}.home-piece{font:46px/52px 'Segoe UI Symbol',serif;color:#c5c5c5;height:52px}.home-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:26px}.home-bottom .help-link{margin:0 0 0 auto;font-size:12px}.home-bottom .secondary{font-size:12px}
 .result-screen{max-width:800px;margin:30px auto 50px}.result-header{text-align:center;margin:0 0 28px}.result-header>.eyebrow{color:#ca9b82}.result-header h1{font-size:36px;letter-spacing:-1px;margin:14px 0;line-height:1.2}.result-header p{font-size:14px;color:#a6a6a6;line-height:1.7;margin:0}.result-card{background:var(--surface);border:1px solid #353535;border-radius:12px;padding:30px}.result-matchup{display:grid;grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);gap:15px;align-items:center;padding:9px 0 30px}.result-team{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;min-width:0}.result-team>.team-mark{width:70px;height:70px}.result-team>.team-mark .team-monogram{font-size:19px}.result-team strong{font-size:17px;line-height:1.4;font-weight:550}.result-team small{font-size:10px;color:#898989}.result-team.result-winner strong{color:#ffb28e}.result-center{text-align:center}.result-center>span{display:block;font:650 33px/1.1 Consolas,monospace;letter-spacing:-1px;color:#f0dccd}.result-center>small{font-size:8px;letter-spacing:1.4px;display:block;margin-top:9px;color:#868686}.result-table{border-collapse:collapse;width:100%;font-size:12px}.result-table caption{text-align:left;padding:12px 0 15px;font-size:13px;font-weight:550;border-top:1px solid #333}.result-table th,.result-table td{padding:12px 8px;border-bottom:1px solid #303030}.result-table thead th{font-size:10px;color:#8d8d8d;font-weight:500;text-align:center}.result-table th:first-child{text-align:left}.result-table tbody th{font-size:12px;color:#a7a7a7;font-weight:400}.result-table td{text-align:center;font-variant-numeric:tabular-nums;color:#ddd}.result-table #resultPointsRow td{font-size:20px;font-weight:650;color:#f0ad8b}.result-actions-count{color:#8b8b8b;font-size:11px;margin:18px 0 0}.result-points-note{color:#d6b49d;background:#ff794b09;border:1px solid #ff794b22;border-radius:5px;padding:12px;font-size:12px;line-height:1.7;margin:17px 0 0}.result-buttons{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}.result-buttons .help-link{margin:5px 0 0;font-size:11px;flex-basis:100%;text-align:center}.nba-stat.scoreboard .stat-side>b{font-size:24px;color:#f3b394}.nba-stat.scoreboard{background:#ff794b06}
 @media(max-width:980px){.home-modes{gap:12px}.home-mode{padding:19px}.home-mode strong{font-size:18px}.home-intro h1{font-size:40px}.heading-actions{justify-content:flex-end}}
 @media(max-width:760px){.home-screen{padding-top:24px}.home-intro{margin-bottom:25px}.home-intro h1{font-size:36px;max-width:none}.home-intro p{font-size:12px}.home-modes{grid-template-columns:1fr;gap:13px}.home-mode{min-height:235px;padding:23px}.home-mode strong{font-size:23px}.home-mode p{font-size:12px}.home-mode>.eyebrow{margin-top:14px}.home-bottom .help-link{margin-left:0}.home-bottom{gap:15px}.heading-actions{gap:6px;max-width:175px}.heading-actions .secondary{padding:8px;font-size:10px}.heading-actions .primary{margin-top:0}.result-screen{margin-top:20px}.result-header h1{font-size:29px;max-width:none}.result-card{padding:20px 14px}.result-matchup{grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr);gap:8px}.result-team strong{font-size:12px}.result-team>.team-mark{width:53px;height:53px}.result-center>span{font-size:26px}.result-table{font-size:11px}.result-table th,.result-table td{padding:11px 4px}.result-table tbody th{font-size:10px}.result-buttons .secondary{font-size:10px;padding:10px}.result-buttons .primary{font-size:11px}}
-/* Courtside scoreboard: separate from the play controls. */
+/* Marcador junto a la cancha, separado de los controles de juego. */
 .arena-scoreboard{min-width:0;background:#17191b;border:1px solid #383a3d;border-radius:10px;padding:20px;box-shadow:0 12px 32px #0002}
 .scoreboard-top{display:flex;justify-content:space-between;gap:10px;color:#777e85;font-size:8px;letter-spacing:1px}.scoreboard-live{color:#e9a77d}.scoreboard-live:before{content:'';display:inline-block;width:5px;height:5px;background:#ee9865;border-radius:50%;margin-right:6px}.is-final .scoreboard-live:before{background:#888}
 .scoreboard-possession{min-height:48px;padding:16px 0;color:#a6aaaf;font-size:11px;line-height:1.6;border-bottom:1px solid #303236}.scoreboard-teams{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);gap:8px;align-items:end;padding:23px 0}.scoreboard-team{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}.scoreboard-label{font-size:9px;letter-spacing:1.5px;color:#8b9097}.scoreboard-team .team-mark{width:54px;height:54px}.scoreboard-team strong{font-size:12px;line-height:1.4;text-align:center;min-height:34px;overflow-wrap:anywhere;color:#c3c5c9}.scoreboard-digits{display:block;width:100%;padding:14px 2px;text-align:center;background:#0c0e10;border:1px solid #292d31;border-radius:5px;color:#ff7859;font:500 clamp(38px,3.8vw,62px)/1.1 Consolas,'Courier New',monospace;letter-spacing:-3px;text-shadow:0 0 16px #ff603528;font-variant-numeric:tabular-nums}.scoreboard-divider{color:#54585f;font:28px Consolas,monospace;padding-bottom:19px}.in-possession .scoreboard-label{color:#efb18e}.scoreboard-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #303236;padding-top:16px;font-size:8px;color:#8b9097;letter-spacing:.6px}.scoreboard-footer b{font:20px Consolas,monospace;color:#b7c999;margin-left:5px}.scoreboard-footer>span:last-child{text-align:right;max-width:90px;line-height:1.6}.scoreboard-rules{color:#777e85;font-size:10px;line-height:1.8;margin:15px 0 0}
 @media(min-width:1200px){body[data-view=game] main,body[data-view=game] .app-header{max-width:1500px}.workspace{grid-template-columns:minmax(215px,.75fr) minmax(340px,1.45fr) minmax(270px,1fr);gap:20px;justify-content:stretch}.arena-scoreboard{position:sticky;top:24px}}
 @media(min-width:761px) and (max-width:1199px){.arena-scoreboard{grid-column:1/-1;display:grid;grid-template-columns:1fr 1.5fr;column-gap:24px}.scoreboard-top,.scoreboard-possession,.scoreboard-footer,.scoreboard-rules{grid-column:1}.scoreboard-teams{grid-column:2;grid-row:1/5;padding:0}.scoreboard-team strong{min-height:0}.scoreboard-team{gap:7px}.scoreboard-digits{font-size:42px;padding:9px}.scoreboard-possession{min-height:0}.scoreboard-footer{margin-top:10px}}
 @media(max-width:760px){.arena-scoreboard{width:100%;padding:18px}.scoreboard-team .team-mark{width:44px;height:44px}.scoreboard-teams{padding:16px 0;gap:14px}.scoreboard-team{gap:8px}.scoreboard-team strong{min-height:0}.scoreboard-digits{font-size:48px;padding:10px}.scoreboard-possession{min-height:0;padding:12px 0}.scoreboard-rules{margin-top:10px}}
-/* Keep capture feedback next to the score, outside the clipped court. */
+/* El aviso de captura queda junto al marcador, fuera del área recortada de la cancha. */
 .scoreboard-capture{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin-top:18px;padding:14px;background:#ff794b0c;border:1px solid #ff794b35;border-radius:6px}.scoreboard-capture strong{font:600 38px/1 Consolas,monospace;color:#ffac84}.scoreboard-capture span{font-size:11px;color:#d0b9ac;line-height:1.6}.score-pop{animation:score-arrival .35s ease-out}@keyframes score-arrival{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.score-pop{animation:none}}
 #nbaOptions>.limit-label{display:block;margin:20px 0;padding:14px;background:#ffffff04;border:1px solid #383838;border-radius:6px;line-height:1.7}#nbaOptions>.limit-label small{display:block;color:#858585;font-size:10px;margin-top:7px}
 
-/* The chess grid sets the geometry; the court remains a quiet backdrop. */
+/* La cuadrícula del ajedrez define la geometría; la cancha queda como fondo discreto. */
 .board { aspect-ratio: 1; }
 .board-frame { width: 100%; margin-inline: auto; }
 .board .square { background: #f3d6a8b8; }
@@ -613,7 +613,7 @@ body[data-effects=off] .square.capture-flash { animation: none; }
  #boardHint { flex: 1 1 120px; }
 }
 
-/* Clean court surface, readable uniforms, and a compact match layout. */
+/* Cancha despejada, uniformes legibles y una disposición compacta. */
 .board-frame { background: #b58d63; border: 5px solid #b58d63; border-radius: 5px; }
 .board .square { background: #e7d5b7; }
 .board .square.dark { background: #ad8761; }

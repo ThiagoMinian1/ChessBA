@@ -2,7 +2,7 @@ package ar.uade.tpo.chess.core.model;
 
 import java.util.Objects;
 
-/** A piece together with the position it stands on. */
+/** Una pieza junto con la posición que ocupa. */
 public record PlacedPiece(Position position, Piece piece) {
 
     public PlacedPiece {

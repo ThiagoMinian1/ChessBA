@@ -10,9 +10,8 @@ import ar.uade.tpo.chess.core.model.Team;
 import java.util.Optional;
 
 /**
- * Things that happened while an action ran. Actions queue them in the {@link GameState}; the {@link Game}
- * delivers them to its observers only once the action has been committed, so observers never hear about an
- * action that was rejected half-way.
+ * Sucesos ocurridos durante una acción. Las acciones los guardan en {@link GameState} y {@link Game} se los
+ * comunica a los observadores cuando la acción ya se confirmó. Así, no reciben avisos de acciones rechazadas.
  */
 public sealed interface GameEvent {
 

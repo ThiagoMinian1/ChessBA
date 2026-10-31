@@ -5,12 +5,12 @@ import ar.uade.tpo.chess.core.model.PieceType;
 import ar.uade.tpo.chess.core.model.Team;
 
 /**
- * What the most recent move did, left in the {@link GameState} so that actions wrapped around a move
- * (decorators) can react to it without re-deriving it.
+ * Resultado de la última jugada, guardado en {@link GameState} para que las acciones que la envuelven
+ * (decoradores) puedan reaccionar sin tener que calcularlo de nuevo.
  *
- * @param team      who moved
- * @param movedType the kind of piece that moved (a pawn, even when it promoted)
- * @param capture   whether the move captured a piece (en passant included)
+ * @param team      bando que jugó
+ * @param movedType tipo de pieza que se movió (sigue siendo peón aunque haya promocionado)
+ * @param capture   indica si hubo una captura, incluida la captura al paso
  */
 public record MoveRecord(Team team, Move move, PieceType movedType, boolean capture) {
 

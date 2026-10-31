@@ -6,14 +6,15 @@ import ar.uade.tpo.chess.core.model.Position;
 import java.util.Optional;
 
 /**
- * What a {@link MoveRule} may look at: the board and the one extra piece of game state that move generation
- * needs (the en passant target). Keeping this small is what lets rules be tested without a whole game.
+ * Datos que puede consultar una {@link MoveRule}: el tablero y el único dato adicional que necesita para
+ * generar movimientos, la casilla de captura al paso. Al mantenerlo acotado, las reglas se prueban sin crear
+ * una partida completa.
  */
 public interface MoveContext {
 
     Board board();
 
-    /** The square a pawn skipped over on the previous move, if that move was a double push. */
+    /** Casilla que saltó el peón en la jugada anterior, si avanzó dos casillas. */
     Optional<Position> enPassantTarget();
 
     static MoveContext of(Board board, Position enPassantTarget) {

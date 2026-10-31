@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Plays a whole game over text streams: setup menu, franchise selection, then the move loop.
- * Streams are injected, so the whole flow can be driven from a test with a scripted input.
- * Everything here is an adapter: it only talks to the core through {@link ChessGame} and the ports.
+ * Permite jugar una partida por consola: menú inicial, selección de franquicia y luego los movimientos.
+ * Los flujos de entrada y salida se inyectan para poder recorrer todo el flujo desde una prueba.
+ * Como adaptador, se comunica con el núcleo únicamente a través de {@link ChessGame} y sus puertos.
  */
 public final class ConsoleRunner {
 
@@ -45,7 +45,7 @@ public final class ConsoleRunner {
         this.out = out;
     }
 
-    /** Runs setup and then the game until it is quit, or input ends. */
+    /** Muestra la configuración y luego juega hasta salir o hasta que se termine la entrada. */
     public void run() {
         out.println("=== Chess ===");
         if (!setup()) {
@@ -54,7 +54,7 @@ public final class ConsoleRunner {
         play();
     }
 
-    // ---- Setup -----------------------------------------------------------------------------------------
+    // ---- Configuración ---------------------------------------------------------------------------------
 
     private boolean setup() {
         out.println("Choose a mode:");
@@ -174,7 +174,7 @@ public final class ConsoleRunner {
         }
     }
 
-    // ---- Game loop -------------------------------------------------------------------------------------
+    // ---- Partida ---------------------------------------------------------------------------------------
 
     private void play() {
         out.println();
@@ -291,7 +291,7 @@ public final class ConsoleRunner {
         }
     }
 
-    // ---- Display ---------------------------------------------------------------------------------------
+    // ---- Presentación ----------------------------------------------------------------------------------
 
     private void showPosition() {
         out.println(renderer.render(game.board()));
@@ -327,7 +327,7 @@ public final class ConsoleRunner {
         }
     }
 
-    /** "White" in plain chess, "White (Los Angeles Lakers)" when the side has a franchise. */
+    /** «Blancas» en ajedrez estándar o «Blancas (Los Angeles Lakers)» si se eligió una franquicia. */
     private String sideLabel(Team team) {
         String plain = team == Team.WHITE ? "White" : "Black";
         String themed = theme.teamName(team);
@@ -374,14 +374,14 @@ public final class ConsoleRunner {
                     legend.append(type.letter()).append('=').append(NbaPieceTheme.roleName(type)).append("  ");
                 }
                 out.println(legend.toString().stripTrailing());
-                break; // both sides use the same roles; one line is enough
+                break; // Los dos bandos usan los mismos roles; alcanza con mostrar una línea.
             }
         }
     }
 
-    // ---- Input helpers ---------------------------------------------------------------------------------
+    // ---- Lectura de datos ------------------------------------------------------------------------------
 
-    /** Prints a prompt and reads a line; returns null (and remembers it) when input has ended. */
+    /** Muestra un mensaje y lee una línea; devuelve null y lo recuerda cuando se termina la entrada. */
     private String prompt(String text) {
         if (inputClosed) {
             return null;
@@ -420,7 +420,7 @@ public final class ConsoleRunner {
                     return value;
                 }
             } catch (NumberFormatException ignored) {
-                // fall through to the message
+                // Continúa con el mensaje.
             }
             out.println("Enter a number between " + min + " and " + max + ".");
         }

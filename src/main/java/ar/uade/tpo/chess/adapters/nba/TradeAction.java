@@ -16,26 +16,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Mechanic 2 - trade / substitution (pattern: Command).
+ * Mecánica 2: intercambio o sustitución (patrón Command).
  *
- * <p>Once per game, each team may swap one of its pieces on the board (never the king) for one of its own
- * pieces on the bench: the bench piece takes the square, and the piece that was on the board goes to the bench.
- * It uses up the team's turn. It is a {@link TurnAction} like a normal move, so the core's undo/redo handles it
- * with no special case.
+ * <p>Una vez por partida, cada bando puede cambiar una pieza propia del tablero (excepto el rey) por una de las
+ * piezas propias del banco. La pieza del banco ocupa la casilla y la otra pasa al banco. El intercambio consume
+ * el turno y, al ser una {@link TurnAction}, se puede deshacer y rehacer como cualquier otra acción.
  *
- * <p>Decisions, so they can be defended:
+ * <p>Detalles de la mecánica:
  * <ul>
- *   <li>The bench is every piece of the team that is off the board: captured pieces and traded-out pieces.</li>
- *   <li>A trade is not allowed while the team's own king is in check (the incoming piece takes the very square
- *       of the outgoing one, so it can never block or capture anything new). It can, however, give check.</li>
- *   <li>A pawn cannot enter on the first or last rank.</li>
- *   <li>The incoming piece counts as having moved, so a rook or king brought in has no castling rights.</li>
- *   <li>A trade is not a capture, but it resets the fifty-move counter and the repetition history, because
- *       the position can no longer be reached by moves alone.</li>
+ *   <li>El banco contiene todas las piezas del bando que están fuera del tablero, tanto las capturadas como las intercambiadas.</li>
+ *   <li>No se puede intercambiar si el rey propio está en jaque: la pieza que entra ocupa la misma casilla que la
+ *       que sale, así que no puede bloquear ni capturar otra pieza. Sí puede dar jaque.</li>
+ *   <li>Un peón no puede entrar en la primera ni en la última fila.</li>
+ *   <li>La pieza que entra cuenta como movida; por eso una torre o un rey no conserva el derecho a enrocar.</li>
+ *   <li>El intercambio no cuenta como captura, pero reinicia el contador de cincuenta movimientos y el historial
+ *       de repetición, porque la posición ya no puede alcanzarse solo con movimientos.</li>
  * </ul>
  *
- * <p>Mandatory TP rules touched: none of the standard rules are changed, but the action adds a way of changing
- * the board that is not a piece movement. It is opt-in: only an adapter that offers it can submit it.
+ * <p>No modifica las reglas estándar, pero permite cambiar el tablero sin mover una pieza. Es opcional: solo
+ * puede ejecutarse desde un adaptador que ofrezca esta mecánica.
  */
 public final class TradeAction implements TurnAction {
 
@@ -45,8 +44,8 @@ public final class TradeAction implements TurnAction {
     private final PieceType benchPiece;
 
     /**
-     * @param square     where the team's own piece on the board stands (it leaves the board)
-     * @param benchPiece which kind of piece from the bench comes in on that square
+     * @param square     casilla de la pieza propia que está en el tablero y se retira
+     * @param benchPiece tipo de pieza del banco que ocupará esa casilla
      */
     public TradeAction(Position square, PieceType benchPiece) {
         this.square = Objects.requireNonNull(square, "square");
@@ -102,7 +101,7 @@ public final class TradeAction implements TurnAction {
         return "Trade " + square + " for bench " + benchPiece;
     }
 
-    /** Whether {@code team} has already used its trade in this game. */
+    /** Indica si {@code team} ya usó su intercambio en esta partida. */
     public static boolean hasTraded(ChessGame game, Team team) {
         return game.extension(KEY, TradeLedger.class).orElseGet(TradeLedger::fresh).hasUsed(team);
     }

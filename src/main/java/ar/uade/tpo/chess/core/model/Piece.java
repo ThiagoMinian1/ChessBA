@@ -3,11 +3,11 @@ package ar.uade.tpo.chess.core.model;
 import java.util.Objects;
 
 /**
- * A chess piece. Pieces are immutable: "moving" a piece replaces it with {@link #withMoved(boolean)}, which is
- * what lets the game take cheap snapshots (Memento) for undo/redo.
+ * Pieza de ajedrez inmutable. Al moverla se crea otra con {@link #withMoved(boolean)}, lo que permite guardar
+ * estados (Memento) sin copiar cada pieza para deshacer o rehacer una jugada.
  *
- * <p>How a piece moves is not decided here: movement is a Strategy ({@code MoveRule}) looked up by
- * {@link #type()}, which keeps the model free of rule logic and avoids a cycle with the rules package.
+ * <p>El movimiento se define en una estrategia ({@code MoveRule}) que se obtiene a partir de {@link #type()}.
+ * Así, el modelo no depende de las reglas y se evita una referencia circular con ese paquete.
  */
 public abstract class Piece {
 
@@ -21,10 +21,10 @@ public abstract class Piece {
 
     public abstract PieceType type();
 
-    /** A copy of this piece with the given "has moved" flag (matters for castling rights). */
+    /** Copia de esta pieza con el indicador de movimiento actualizado (afecta al derecho de enroque). */
     public abstract Piece withMoved(boolean moved);
 
-    /** Conventional material value (pawn 1, minor 3, rook 5, queen 9; the king has no exchange value). */
+    /** Valor material habitual: peón 1, pieza menor 3, torre 5 y dama 9; el rey no tiene valor de intercambio. */
     public abstract int materialValue();
 
     public Team team() {
@@ -52,7 +52,7 @@ public abstract class Piece {
         return Objects.hash(getClass(), team, moved);
     }
 
-    /** Diagram letter: uppercase for white, lowercase for black. */
+    /** Letra para el diagrama: mayúscula para blancas y minúscula para negras. */
     public char symbol() {
         char letter = type().letter();
         return team == Team.WHITE ? letter : Character.toLowerCase(letter);

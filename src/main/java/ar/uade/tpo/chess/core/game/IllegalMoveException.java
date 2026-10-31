@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.game;
 
-/** Thrown when a move or action is not allowed by the rules (or when the game is already over). */
+/** Se lanza cuando las reglas no permiten un movimiento o una acción, o si la partida ya terminó. */
 public class IllegalMoveException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;

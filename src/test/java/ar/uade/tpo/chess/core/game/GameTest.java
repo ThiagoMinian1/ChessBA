@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameTest {
 
-    // ---- Start and turns -------------------------------------------------------------------------------
+    // ---- Inicio y turnos ------------------------------------------------------------------------------
 
     @Test
     void aNewGameStartsFromTheStandardPositionWithWhiteToMove() {
@@ -123,7 +123,7 @@ class GameTest {
         assertEquals(List.of("e2e4", "e7e5"), game.history());
     }
 
-    // ---- Captures and the move counter -----------------------------------------------------------------
+    // ---- Capturas y contador de jugadas ----------------------------------------------------------------
 
     @Test
     void aCaptureRemovesThePieceAndSendsItToTheBench() {
@@ -159,7 +159,7 @@ class GameTest {
         assertEquals(1, game.halfmoveClock());
     }
 
-    // ---- Check -----------------------------------------------------------------------------------------
+    // ---- Jaque -----------------------------------------------------------------------------------------
 
     @Test
     void detectsCheck() {
@@ -202,7 +202,7 @@ class GameTest {
         assertEquals(Set.of("d1", "f1"), targetsFrom(game, "e1"));
     }
 
-    // ---- Checkmate -------------------------------------------------------------------------------------
+    // ---- Jaque mate ------------------------------------------------------------------------------------
 
     @Test
     void foolsMate() {
@@ -239,7 +239,7 @@ class GameTest {
 
     @Test
     void aCheckThatCanBeBlockedOrCapturedIsNotMate() {
-        // The knight on e6 can interpose on d8 or f8, so Ra8+ is check but not mate.
+        // El caballo de e6 puede interponerse en d8 o f8, así que Ta8+ es jaque, pero no mate.
         Game game = gameOf(Team.WHITE, "kh8", "pg7", "ph7", "Ra1", "Kb1", "ne6");
         play(game, "a1a8");
         assertTrue(game.isInCheck());
@@ -257,7 +257,7 @@ class GameTest {
         assertTrue(game.legalMovesFrom(pos("a2")).isEmpty());
     }
 
-    // ---- Stalemate -------------------------------------------------------------------------------------
+    // ---- Ahogado ---------------------------------------------------------------------------------------
 
     @Test
     void stalemateIsADrawNotAWin() {
@@ -274,7 +274,7 @@ class GameTest {
         assertEquals(GameStatus.STALEMATE, gameOf(Team.BLACK, "ka8", "Kb6", "Qc7").status());
     }
 
-    // ---- Insufficient material -------------------------------------------------------------------------
+    // ---- Material insuficiente -------------------------------------------------------------------------
 
     @Test
     void capturingTheLastPieceLeavingOnlyKingsIsADraw() {
@@ -295,7 +295,7 @@ class GameTest {
         assertEquals(GameStatus.ONGOING, gameOf(Team.WHITE, "Ke1", "Ra1", "ke8").status());
     }
 
-    // ---- Fifty-move rule -------------------------------------------------------------------------------
+    // ---- Regla de los cincuenta movimientos ------------------------------------------------------------
 
     @Test
     void theFiftyMoveRuleDrawsAfterOneHundredQuietHalfMoves() {
@@ -355,7 +355,7 @@ class GameTest {
         assertEquals(GameStatus.DRAW_FIFTY_MOVE_RULE, new Game(state).status());
     }
 
-    // ---- Threefold repetition --------------------------------------------------------------------------
+    // ---- Repetición triple -----------------------------------------------------------------------------
 
     @Test
     void threefoldRepetitionDrawsOnTheThirdOccurrence() {
@@ -383,7 +383,8 @@ class GameTest {
         Game game = new Game();
         play(game, "g1f3", "g8f6", "f3g1", "f6g8");
         assertEquals(Board.standard().toString(), game.board().toString());
-        // Ply 3 had the start board with black to move: that is a different position, so no early draw at ply 4.
+        // En la tercera media jugada se repitió el tablero inicial, pero con negras al turno: es otra posición
+        // y todavía no hay tablas en la cuarta media jugada.
         assertEquals(GameStatus.ONGOING, game.status());
         play(game, "g1f3", "g8f6", "f3g1", "f6g8");
         assertEquals(GameStatus.DRAW_THREEFOLD_REPETITION, game.status());
@@ -392,7 +393,7 @@ class GameTest {
     @Test
     void lostCastlingRightsMakeARepeatedBoardADifferentPosition() {
         Game game = gameOf(Team.WHITE, "Ke1", "Ra1", "kd7");
-        // After four plies the board is the starting board again, but white can no longer castle.
+        // Tras cuatro medias jugadas, el tablero vuelve a la posición inicial, pero las blancas ya no pueden enrocar.
         play(game, "a1a2", "d7d6", "a2a1", "d6d7");
         play(game, "a1a2", "d7d6", "a2a1", "d6d7");
         assertEquals(GameStatus.ONGOING, game.status(), "the start position had different castling rights");
@@ -402,8 +403,8 @@ class GameTest {
 
     @Test
     void anEnPassantChanceOnlyCountsWhenTheCaptureIsPossible() {
-        // After 1.e4 the en passant square e3 cannot be used by any black pawn, so it must not make the
-        // position different from the same one reached on later cycles.
+        // Después de 1.e4, ningún peón negro puede capturar en e3 al paso. Esa casilla no debe hacer que la
+        // posición sea distinta de la que se repita en los ciclos siguientes.
         Game game = new Game();
         play(game, "e2e4", "g8f6", "g1f3", "f6g8", "f3g1");
         assertEquals(GameStatus.ONGOING, game.status());
@@ -411,7 +412,7 @@ class GameTest {
         assertEquals(GameStatus.DRAW_THREEFOLD_REPETITION, game.status());
     }
 
-    // ---- Resignation and agreed draws ------------------------------------------------------------------
+    // ---- Abandono y tablas acordadas -------------------------------------------------------------------
 
     @Test
     void resigningGivesTheWinToTheOpponent() {

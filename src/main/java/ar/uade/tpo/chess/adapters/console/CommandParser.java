@@ -7,10 +7,10 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Turns a typed line into a {@link Command}.
+ * Convierte una línea ingresada en un {@link Command}.
  *
- * <p>Moves are plain coordinates, with or without a space: {@code e2 e4}, {@code e2e4}. A promotion piece may be
- * appended: {@code e7 e8 q}, {@code e7e8q} or {@code e7e8=q}. Other commands: {@code undo}, {@code redo},
+ * <p>Los movimientos se indican con coordenadas, con o sin espacio: {@code e2 e4}, {@code e2e4}. Para promocionar,
+ * se puede agregar la pieza elegida: {@code e7 e8 q}, {@code e7e8q} o {@code e7e8=q}. Otros comandos: {@code undo}, {@code redo},
  * {@code trade <square> <piece>}, {@code bench}, {@code resign}, {@code draw}, {@code help}, {@code quit}.
  */
 public final class CommandParser {

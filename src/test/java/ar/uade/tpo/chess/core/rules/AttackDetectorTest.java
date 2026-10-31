@@ -124,7 +124,7 @@ class AttackDetectorTest {
 
     @Test
     void aPinnedPieceStillGivesCheck() {
-        // The white bishop on e2 is pinned to its king, but it still attacks the black king on a6.
+        // El alfil blanco de e2 está clavado al rey, pero igual ataca al rey negro de a6.
         Board board = boardOf("Ke1", "Be2", "re8", "ka6");
         assertTrue(whiteAttacks(board, "a6"));
     }

@@ -9,9 +9,9 @@ import ar.uade.tpo.chess.core.model.Team;
 import java.util.Optional;
 
 /**
- * Answers "is this square attacked by that team?". It works from the target square outwards using plain
- * geometry (it does not call the {@link MoveRule}s), so castling can use it without recursion.
- * Being attacked ignores whether the attacker is pinned: a pinned piece still gives check.
+ * Comprueba si un bando ataca una casilla. Parte de la casilla objetivo y revisa la geometría de las piezas,
+ * sin llamar a las {@link MoveRule}s; así se puede usar al enrocar sin generar recursión.
+ * Una pieza clavada también ataca y puede dar jaque.
  */
 public final class AttackDetector {
 
@@ -27,7 +27,7 @@ public final class AttackDetector {
     }
 
     private static boolean attackedByPawn(Board board, Position target, Team attacker) {
-        // An attacking pawn stands one rank "behind" the target from the attacker's point of view.
+        // Desde el punto de vista del atacante, el peón está una fila detrás de la casilla objetivo.
         int pawnRank = target.rank() - attacker.forward();
         for (int fileStep : new int[] {-1, 1}) {
             Optional<Position> source = Position.tryOf(target.file() + fileStep, pawnRank);
@@ -49,7 +49,7 @@ public final class AttackDetector {
         return false;
     }
 
-    /** A queen counts as both a rook-type and a bishop-type slider. */
+    /** La dama se mueve como torre y como alfil. */
     private static boolean attackedBySlider(Board board, Position target, Team attacker,
                                             int[][] directions, PieceType sliderType) {
         for (int[] direction : directions) {

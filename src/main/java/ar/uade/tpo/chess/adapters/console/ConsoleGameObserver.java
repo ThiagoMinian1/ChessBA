@@ -13,7 +13,7 @@ import ar.uade.tpo.chess.ports.PieceTheme;
 import java.io.PrintStream;
 import java.util.Optional;
 
-/** A {@link GameObserver} that narrates the game on a {@link PrintStream}, using the active {@link PieceTheme}. */
+/** {@link GameObserver} que relata la partida en un {@link PrintStream} con el {@link PieceTheme} activo. */
 public final class ConsoleGameObserver implements GameObserver {
 
     private final PrintStream out;
@@ -57,7 +57,7 @@ public final class ConsoleGameObserver implements GameObserver {
         out.println("*** " + describeResult(status, winner) + " ***");
     }
 
-    /** Mechanics write their messages with the neutral side names; show the themed team names instead. */
+    /** Las mecánicas usan nombres de bando neutros en sus mensajes; acá se muestran los del tema activo. */
     @Override
     public void onNotice(String message) {
         String themed = message

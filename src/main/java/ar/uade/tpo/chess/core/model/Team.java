@@ -1,8 +1,8 @@
 package ar.uade.tpo.chess.core.model;
 
 /**
- * The two sides of a chess game. The core only knows about {@code WHITE} and {@code BLACK};
- * any other identity a side may be given when presented lives in the adapters.
+ * Los dos bandos de una partida. El núcleo solo conoce {@code WHITE} y {@code BLACK};
+ * cualquier otro nombre que se muestre para un bando pertenece a los adaptadores.
  */
 public enum Team {
     WHITE,
@@ -12,22 +12,22 @@ public enum Team {
         return this == WHITE ? BLACK : WHITE;
     }
 
-    /** Zero-based rank where this team's back-rank pieces start (rank 1 for white, rank 8 for black). */
+    /** Fila inicial, desde cero, de las piezas mayores (fila 1 para blancas y 8 para negras). */
     public int homeRank() {
         return this == WHITE ? 0 : 7;
     }
 
-    /** Zero-based rank where this team's pawns start (rank 2 for white, rank 7 for black). */
+    /** Fila inicial, desde cero, de los peones (fila 2 para blancas y 7 para negras). */
     public int pawnStartRank() {
         return this == WHITE ? 1 : 6;
     }
 
-    /** Zero-based rank where this team's pawns promote. */
+    /** Fila, desde cero, en la que promocionan los peones de este bando. */
     public int promotionRank() {
         return this == WHITE ? 7 : 0;
     }
 
-    /** Rank direction in which this team's pawns advance: +1 for white, -1 for black. */
+    /** Sentido en que avanzan los peones: +1 para blancas y -1 para negras. */
     public int forward() {
         return this == WHITE ? 1 : -1;
     }

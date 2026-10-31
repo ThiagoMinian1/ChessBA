@@ -4,15 +4,15 @@ const names = {KING:'Rey', QUEEN:'Dama', ROOK:'Torre', BISHOP:'Alfil', KNIGHT:'C
 let state, selected = null, flipped = false, busy = false, soundOn = true, toastTimer, audio, feedbackTimer;
 let focusedSquare = 'e2';
 let effectsOn = true, momentTimer, runningAnimations = [];
-try { effectsOn = localStorage.getItem('chessba-effects') !== 'off'; } catch { /* Optional preference. */ }
+try { effectsOn = localStorage.getItem('chessba-effects') !== 'off'; } catch { /* Preferencia opcional. */ }
 let jerseyPieces = true;
-try { jerseyPieces = localStorage.getItem('chessba-piece-style-v3') !== 'classic'; } catch { /* Optional preference. */ }
+try { jerseyPieces = localStorage.getItem('chessba-piece-style-v3') !== 'classic'; } catch { /* Preferencia opcional. */ }
 let availableFranchises = [];
 let currentView='home', setupReady=false;
 let crowdOn = false, crowdPreset = 'defense', crowdPlaying = false, crowdLastAt = 0, crowdEndTimer, crowdVoice = null, crowdNodes = [];
-try {crowdOn=localStorage.getItem('chessba-crowd')==='on';crowdPreset=localStorage.getItem('chessba-crowd-preset')||'defense';} catch { /* Optional preferences. */ }
+try {crowdOn=localStorage.getItem('chessba-crowd')==='on';crowdPreset=localStorage.getItem('chessba-crowd-preset')||'defense';} catch { /* Preferencias opcionales. */ }
 const roles = {KING:['FP','Franchise Player'],QUEEN:['PG','Point Guard'],ROOK:['C','Center'],BISHOP:['SF','Small Forward'],KNIGHT:['SG','Shooting Guard'],PAWN:['RK','Rookie']};
-try { soundOn = localStorage.getItem('chessba-sound') !== 'off'; } catch { /* Private browsing may disable storage. */ }
+try { soundOn = localStorage.getItem('chessba-sound') !== 'off'; } catch { /* La navegación privada puede bloquear el almacenamiento. */ }
 const text = (tag, value, className = '') => { const e = document.createElement(tag); e.textContent = value; e.className = className; return e; };
 const controlPaths = {
   flip:['M8 3v18M4 7l4-4 4 4M16 21V3M12 17l4 4 4-4'],
@@ -95,7 +95,7 @@ function syncAvailability() {
   $('#draw').disabled = unavailable || state?.status !== 'ONGOING';
   $('#resign').disabled = unavailable || state?.status !== 'ONGOING';
 }
-// Compare actual board pieces, so en passant and promotion captures are included.
+// Compara las piezas reales del tablero para incluir capturas al paso y de piezas promocionadas.
 function classifyMove(before, after) {
   const enemy = before.turn === 'WHITE' ? 'BLACK' : 'WHITE';
   const capture = before.board.find(piece => piece.team === enemy &&
@@ -488,7 +488,7 @@ function unlockSound() {
   try {
     audio ||= new (window.AudioContext || window.webkitAudioContext)();
     if (audio.state === 'suspended') audio.resume().catch(()=>{});
-  } catch { /* Audio is optional and never blocks a move. */ }
+  } catch { /* El audio es opcional y nunca impide mover. */ }
 }
 function syncSoundButton() {
   $('#sound').setAttribute('aria-pressed',String(soundOn));
@@ -506,7 +506,7 @@ function syncCrowdControls() {
 function stopCrowd() {
   clearTimeout(crowdEndTimer);
   if (crowdVoice) {window.speechSynthesis?.cancel();crowdVoice=null;}
-  for(const node of crowdNodes){try{node.stop();node.disconnect();}catch{/* Already ended. */}}
+  for(const node of crowdNodes){try{node.stop();node.disconnect();}catch{/* Ya había terminado. */}}
   crowdNodes=[];crowdPlaying=false;
 }
 function playCrowd(preview = false) {
@@ -519,7 +519,7 @@ function playCrowd(preview = false) {
     if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
       crowdVoice=new window.SpeechSynthesisUtterance(crowdPreset==='letsgo'?"Let's go! Let's go!":'Defense! Defense!');
       crowdVoice.lang='en-US';crowdVoice.rate=.88;crowdVoice.pitch=.72;crowdVoice.volume=.42;
-      try{window.speechSynthesis.speak(crowdVoice);}catch{/* The rhythm works even without speech support. */}
+      try{window.speechSynthesis.speak(crowdVoice);}catch{/* El ritmo funciona aunque no haya síntesis de voz. */}
     }
   }
   crowdEndTimer=setTimeout(()=>{crowdPlaying=false;crowdVoice=null;crowdNodes=[];},4000);
@@ -542,7 +542,7 @@ function playSound(kind = 'move', delay = 0) {
     };
     if (kind === 'capture') {
       tone(115,now,.16,.18,42);
-      // Filtered air followed by a short net rustle: a clean basket, without a rim hit.
+      // Aire filtrado y un roce breve de la red: una canasta limpia, sin golpear el aro.
       const duration = .48, buffer = audio.createBuffer(1,Math.ceil(audio.sampleRate*duration),audio.sampleRate);
       const samples = buffer.getChannelData(0);
       for (let i=0;i<samples.length;i++) samples[i] = Math.random()*2-1;
@@ -567,7 +567,7 @@ function playSound(kind = 'move', delay = 0) {
       (kind === 'win' ? [523,659,784,1047] : [392,523,784]).forEach((hz,i)=>tone(hz,now+i*.09,.23,.045));
     } else if (kind === 'navigate') tone(330,now,.065,.035,260);
     else { tone(230,now,.065,.12,100);tone(620,now,.035,.025,380); }
-  } catch { /* Browsers without audio support can still play chess. */ }
+  } catch { /* Se puede jugar al ajedrez aunque el navegador no admita audio. */ }
 }
 function openNewGame(mode = ['custom','theme'].includes(state?.mode) ? state.mode : 'nba') {
   if (busy || !state || !setupReady) return;
@@ -598,7 +598,7 @@ $('#resultReview').onclick=()=>showView('game');
 $('#resultUndo').onclick=()=>action('undo');
 $('#jerseyToggle').onclick=()=>{
   jerseyPieces=!jerseyPieces;
-  try {localStorage.setItem('chessba-piece-style-v3',jerseyPieces?'jerseys':'classic');} catch { /* Optional preference. */ }
+  try {localStorage.setItem('chessba-piece-style-v3',jerseyPieces?'jerseys':'classic');} catch { /* Preferencia opcional. */ }
   render();
 };
 function syncEffectsButton() {
@@ -609,7 +609,7 @@ function syncEffectsButton() {
 }
 $('#effectsToggle').onclick=()=>{
   effectsOn=!effectsOn;syncEffectsButton();clearPlayEffects();
-  try {localStorage.setItem('chessba-effects',effectsOn?'on':'off');} catch { /* Optional preference. */ }
+  try {localStorage.setItem('chessba-effects',effectsOn?'on':'off');} catch { /* Preferencia opcional. */ }
   toast(effectsOn?'Efectos visuales activados':'Efectos visuales desactivados');
 };
 function updateTeamPreview() {
@@ -663,19 +663,19 @@ document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>but
 $('#flip').onclick=()=>{flipped=!flipped;if(state)render();};
 $('#sound').onclick=()=>{
   soundOn=!soundOn;syncSoundButton();
-  try {localStorage.setItem('chessba-sound',soundOn?'on':'off');} catch { /* Optional preference. */ }
+  try {localStorage.setItem('chessba-sound',soundOn?'on':'off');} catch { /* Preferencia opcional. */ }
   if (soundOn) {unlockSound();audio?.resume().then(()=>playSound('capture')).catch(()=>{});}
   else {stopCrowd();if(audio?.state==='running')audio.suspend().catch(()=>{});}
   toast(soundOn?'Sonidos de cancha activados · swish en cada captura':'Sonidos silenciados');
 };
 $('#crowdToggle').onclick=()=>{
   crowdOn=!crowdOn;syncCrowdControls();
-  try{localStorage.setItem('chessba-crowd',crowdOn?'on':'off');}catch{/* Optional preference. */}
+  try{localStorage.setItem('chessba-crowd',crowdOn?'on':'off');}catch{/* Preferencia opcional. */}
   if(crowdOn&&soundOn){unlockSound();audio?.resume().then(()=>playCrowd(true)).catch(()=>{});}else stopCrowd();
   if(crowdOn&&!soundOn)toast('Tribuna activada. Activá también el sonido del tablero para escucharla.');
 };
 $('#crowdTest').onclick=()=>{unlockSound();audio?.resume().then(()=>playCrowd(true)).catch(()=>{});};
-$('#crowdPreset').onchange=()=>{crowdPreset=$('#crowdPreset').value;stopCrowd();try{localStorage.setItem('chessba-crowd-preset',crowdPreset);}catch{/* Optional preference. */}};
+$('#crowdPreset').onchange=()=>{crowdPreset=$('#crowdPreset').value;stopCrowd();try{localStorage.setItem('chessba-crowd-preset',crowdPreset);}catch{/* Preferencia opcional. */}};
 $('#undo').onclick=()=>action('undo');$('#redo').onclick=()=>action('redo');
 $('#draw').onclick=async()=>{if(await confirmAction('¿Tablas de común acuerdo?','Ambos jugadores deben estar de acuerdo. Confirmar termina la partida en empate.'))await action('draw');};
 $('#resign').onclick=async()=>{if(await confirmAction('¿Querés rendirte?','El equipo que tiene el turno abandona y su rival gana la partida.'))await action('resign');};

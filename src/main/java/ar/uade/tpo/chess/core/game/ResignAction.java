@@ -5,7 +5,7 @@ import ar.uade.tpo.chess.core.model.Team;
 
 import java.util.Objects;
 
-/** A player gives up; the other side wins. Being an action, it can be undone like any other. */
+/** Un jugador abandona y gana el otro bando. Como cualquier acción, se puede deshacer. */
 public final class ResignAction implements TurnAction {
 
     private final Team resigning;

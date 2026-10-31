@@ -7,8 +7,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * The 8x8 board. It only knows where pieces are; it knows nothing about turns or rules.
- * {@link #copy()} is cheap because {@link Piece}s are immutable and can be shared between copies.
+ * Tablero de 8x8. Solo guarda las piezas y no conoce los turnos ni las reglas.
+ * {@link #copy()} es rápido porque las {@link Piece}s son inmutables y se comparten entre copias.
  */
 public final class Board {
 
@@ -21,7 +21,7 @@ public final class Board {
         return new Board();
     }
 
-    /** The standard starting position. */
+    /** Posición inicial estándar. */
     public static Board standard() {
         Board board = new Board();
         PieceType[] backRank = {
@@ -38,8 +38,9 @@ public final class Board {
     }
 
     /**
-     * Builds a board from 8 text rows, rank 8 first. Uppercase letters are white pieces, lowercase are black,
-     * and {@code '.'} is an empty cell. All pieces start unmoved. Mainly useful for tests and debugging.
+     * Crea un tablero a partir de 8 filas de texto, empezando por la fila 8. Las mayúsculas representan piezas
+     * blancas, las minúsculas negras y {@code '.'} una casilla vacía. Todas las piezas empiezan sin mover.
+     * Se usa sobre todo en pruebas y para depurar.
      */
     public static Board fromDiagram(String... rows) {
         if (rows == null || rows.length != Position.SIZE) {
@@ -78,13 +79,13 @@ public final class Board {
         return cells[position.file()][position.rank()] == null;
     }
 
-    /** Puts a piece on a position, replacing whatever was there. */
+    /** Coloca una pieza en una posición y reemplaza la que hubiera. */
     public void place(Position position, Piece piece) {
         Objects.requireNonNull(piece, "piece");
         cells[position.file()][position.rank()] = piece;
     }
 
-    /** Empties a position and returns the piece that was there, if any. */
+    /** Vacía una posición y devuelve la pieza que había, si existía. */
     public Optional<Piece> remove(Position position) {
         Piece removed = cells[position.file()][position.rank()];
         cells[position.file()][position.rank()] = null;
@@ -92,9 +93,9 @@ public final class Board {
     }
 
     /**
-     * Raw relocation of a piece with no rule checks: the piece on {@code from} ends on {@code to}.
+     * Mueve una pieza de {@code from} a {@code to} sin comprobar las reglas.
      *
-     * @return the piece that was captured on {@code to}, if any
+     * @return la pieza capturada en {@code to}, si había una
      */
     public Optional<Piece> movePiece(Position from, Position to) {
         Piece moving = remove(from)
@@ -112,7 +113,7 @@ public final class Board {
         return copy;
     }
 
-    /** All pieces on the board, scanning a1, a2, ... h8. */
+    /** Todas las piezas del tablero, en orden desde a1 hasta h8. */
     public List<PlacedPiece> pieces() {
         List<PlacedPiece> result = new ArrayList<>();
         for (int file = 0; file < Position.SIZE; file++) {
@@ -160,7 +161,7 @@ public final class Board {
         return Arrays.deepHashCode(cells);
     }
 
-    /** The same 8-row diagram format accepted by {@link #fromDiagram(String...)}, rank 8 first. */
+    /** El mismo formato de 8 filas que acepta {@link #fromDiagram(String...)}, empezando por la fila 8. */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

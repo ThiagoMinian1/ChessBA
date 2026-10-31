@@ -11,12 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * King: one square in any direction, plus castling.
+ * Rey: una casilla en cualquier dirección, además del enroque.
  *
- * <p>Castling (chess.com rules) requires that: neither the king nor the chosen rook has moved; all squares
- * between them are empty; the king is not in check; and the king neither passes through nor lands on an
- * attacked square. (The rook may pass over an attacked square, and on the long side the b-file square only
- * needs to be empty.)
+ * <p>Para enrocar, según las reglas de chess.com, ni el rey ni la torre elegida deben haberse movido; las casillas
+ * entre ambos deben estar vacías; el rey no puede estar en jaque ni pasar por una casilla atacada. La torre sí
+ * puede pasar por una casilla atacada y, en el enroque largo, la casilla de la columna b solo debe estar vacía.
  */
 public final class KingMoveRule extends StepMoveRule {
 
@@ -47,7 +46,7 @@ public final class KingMoveRule extends StepMoveRule {
             return;
         }
 
-        // Short castling: f and g empty and not attacked.
+        // Enroque corto: f y g están vacías y no reciben ataques.
         Position f = new Position(5, rank);
         Position g = new Position(6, rank);
         if (rookReady(board, team, KINGSIDE_ROOK_FILE, rank)
@@ -57,7 +56,7 @@ public final class KingMoveRule extends StepMoveRule {
             moves.add(Move.castleKingside(from, g));
         }
 
-        // Long castling: b, c and d empty; c and d not attacked (b may be attacked).
+        // Enroque largo: b, c y d están vacías; c y d no reciben ataques (b sí puede estar atacada).
         Position b = new Position(1, rank);
         Position c = new Position(2, rank);
         Position d = new Position(3, rank);

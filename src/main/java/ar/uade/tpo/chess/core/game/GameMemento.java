@@ -1,12 +1,12 @@
 package ar.uade.tpo.chess.core.game;
 
 /**
- * Memento: an opaque, frozen snapshot of a {@link GameState}. The state (Originator) creates it with
- * {@link GameState#save()}; the game's history (Caretaker) stores it without looking inside; restoring
- * always yields a fresh copy, so a snapshot can never be altered by later play.
+ * Memento: una copia inmutable y opaca de {@link GameState}. El estado (Originator) la crea con
+ * {@link GameState#save()} y el historial de la partida (Caretaker) la guarda sin acceder a su contenido.
+ * Al restaurarla siempre se obtiene una copia nueva, que no puede cambiar durante el juego.
  *
- * <p>Undoing by restoring snapshots, instead of reversing each kind of move by hand, is what makes
- * castling, en passant, promotion, captures and any custom action revert correctly with the same code.
+ * <p>Restaurar una copia en vez de revertir cada tipo de movimiento por separado permite deshacer
+ * correctamente enroques, capturas al paso, promociones, capturas y cualquier acción personalizada.
  */
 public final class GameMemento {
 

@@ -3,8 +3,8 @@ package ar.uade.tpo.chess.core.model;
 import java.util.Objects;
 
 /**
- * A move of a single piece. For castling, {@code from}/{@code to} are the king's squares.
- * Promotion moves carry the piece the pawn becomes; every other move must carry {@code null}.
+ * Movimiento de una pieza. En el enroque, {@code from}/{@code to} son las casillas del rey.
+ * En una promoción se indica en qué pieza se convierte el peón; en los demás casos debe ser {@code null}.
  */
 public record Move(Position from, Position to, MoveType type, PieceType promotion) {
 
@@ -54,7 +54,7 @@ public record Move(Position from, Position to, MoveType type, PieceType promotio
         return type == MoveType.CASTLE_KINGSIDE || type == MoveType.CASTLE_QUEENSIDE;
     }
 
-    /** Coordinate notation: {@code e2e4}, or {@code e7e8=Q} for promotions. */
+    /** Notación por coordenadas: {@code e2e4} o {@code e7e8=Q} para una promoción. */
     @Override
     public String toString() {
         String base = from.toString() + to;

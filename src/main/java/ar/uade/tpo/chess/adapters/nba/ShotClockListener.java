@@ -2,14 +2,14 @@ package ar.uade.tpo.chess.adapters.nba;
 
 import ar.uade.tpo.chess.core.model.Team;
 
-/** Observer of the shot clock: told when a team is running low and when a violation skips its turn. */
+/** Observador del reloj de posesión; recibe avisos de poco tiempo y de turnos saltados por una infracción. */
 public interface ShotClockListener {
 
-    /** {@code team} has {@code movesRemaining} own moves left before its clock expires. */
+    /** A {@code team} le quedan {@code movesRemaining} jugadas propias antes de que venza el reloj. */
     default void onShotClockWarning(Team team, int movesRemaining) {
     }
 
-    /** {@code team}'s clock expired and its turn was skipped. */
+    /** Venció el reloj de {@code team} y se saltó su turno. */
     default void onShotClockViolation(Team team) {
     }
 }

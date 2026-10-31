@@ -13,74 +13,72 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * What a game offers to the outside world. {@link Game} implements it for standard chess, and decorators
- * implement it by wrapping another {@code ChessGame}, which is how optional mechanics are layered on without
- * touching the core.
+ * Interfaz de una partida para los componentes externos. {@link Game} la implementa para el ajedrez estándar;
+ * los decoradores la envuelven para agregar mecánicas opcionales sin modificar el núcleo.
  *
- * <p>Everything a player can do funnels through {@link #execute(TurnAction)} (Command). The convenience
- * methods below are default methods built on it, so a decorator that intercepts {@code execute} intercepts
- * them all.
+ * <p>Todas las acciones del jugador pasan por {@link #execute(TurnAction)} (Command). Los métodos auxiliares
+ * de abajo se apoyan en esa operación, así que un decorador que la intercepte también recibe esas acciones.
  */
 public interface ChessGame {
 
     Team currentTurn();
 
-    /** A copy of the board; changing it does not affect the game. */
+    /** Copia del tablero; modificarla no afecta la partida. */
     Board board();
 
     GameStatus status();
 
     Optional<Team> winner();
 
-    /** Whether the side to move is in check. */
+    /** Indica si el bando al que le toca jugar está en jaque. */
     boolean isInCheck();
 
-    /** Legal moves for the side to move; empty once the game is over. */
+    /** Jugadas legales del bando al que le toca; queda vacío cuando termina la partida. */
     List<Move> legalMoves();
 
     List<Move> legalMovesFrom(Position from);
 
-    /** Pieces of {@code team} that are off the board (captured, or traded out by a mechanic). */
+    /** Piezas de {@code team} que están fuera del tablero (capturadas o intercambiadas por alguna mecánica). */
     List<Piece> bench(Team team);
 
-    /** Half-moves since the last capture or pawn move. */
+    /** Medias jugadas desde la última captura o movimiento de peón. */
     int halfmoveClock();
 
-    /** Read access to state kept by decorators, which travels with snapshots. */
+    /** Acceso de lectura al estado de los decoradores, que se conserva en las copias de la partida. */
     <T> Optional<T> extension(String key, Class<T> type);
 
-    /** Runs an action: validates it, applies it atomically, and records it for undo/redo. */
+    /** Ejecuta una acción: la valida, la aplica de forma atómica y la registra para deshacer o rehacer. */
     void execute(TurnAction action);
 
-    /** Reverts the last executed action. Returns false if there is nothing to undo. */
+    /** Revierte la última acción. Devuelve false si no hay nada que deshacer. */
     boolean undo();
 
-    /** Re-applies the last undone action. Returns false if there is nothing to redo. */
+    /** Vuelve a aplicar la última acción deshecha. Devuelve false si no hay nada que rehacer. */
     boolean redo();
 
     boolean canUndo();
 
     boolean canRedo();
 
-    /** Descriptions of the actions currently applied, oldest first. */
+    /** Descripciones de las acciones aplicadas, de la más antigua a la más reciente. */
     List<String> history();
 
     void addObserver(GameObserver observer);
 
     void removeObserver(GameObserver observer);
 
-    // ---- Conveniences built on execute() ---------------------------------------------------------------
+    // ---- Métodos auxiliares basados en execute() -------------------------------------------------------
 
     default void play(Move move) {
         execute(new MoveAction(move));
     }
 
-    /** Plays the legal move from {@code from} to {@code to}; throws {@link PromotionRequiredException} for promotions. */
+    /** Juega el movimiento legal de {@code from} a {@code to}; lanza {@link PromotionRequiredException} si hay que promocionar. */
     default void play(Position from, Position to) {
         play(from, to, null);
     }
 
-    /** Like {@link #play(Position, Position)} but chooses the promotion piece (null when the move is not a promotion). */
+    /** Como {@link #play(Position, Position)}, pero permite elegir la pieza de promoción (null si no hay promoción). */
     default void play(Position from, Position to, PieceType promotion) {
         List<Move> candidates = legalMovesFrom(from).stream().filter(m -> m.to().equals(to)).toList();
         if (candidates.isEmpty()) {
@@ -102,7 +100,7 @@ public interface ChessGame {
         play(chosen);
     }
 
-    /** True if moving {@code from} to {@code to} is a promotion, so the caller must choose a piece. */
+    /** Indica si mover de {@code from} a {@code to} es una promoción y hay que elegir una pieza. */
     default boolean requiresPromotion(Position from, Position to) {
         return legalMovesFrom(from).stream().anyMatch(m -> m.to().equals(to) && m.isPromotion());
     }

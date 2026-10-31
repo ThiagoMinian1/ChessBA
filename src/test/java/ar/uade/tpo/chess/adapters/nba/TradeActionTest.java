@@ -30,14 +30,14 @@ class TradeActionTest {
         return pieces.stream().map(Piece::type).toList();
     }
 
-    /** White pawn on e4 that can be traded for a bench queen; black king safely on h8. */
+    /** Peón blanco en e4 que puede cambiarse por una dama del banco; el rey negro está seguro en h8. */
     private static Game gameWithWhiteQueenOnTheBench() {
         GameState state = stateOf(Team.WHITE, "Ke1", "Pe4", "kh8");
         state.bench(Team.WHITE).add(new Queen(Team.WHITE));
         return new Game(state);
     }
 
-    // ---- A successful trade ----------------------------------------------------------------------------
+    // ---- Intercambio exitoso ---------------------------------------------------------------------------
 
     @Test
     void theBenchPieceTakesTheSquareAndTheBoardPieceGoesToTheBench() {
@@ -133,7 +133,7 @@ class TradeActionTest {
         assertEquals("check BLACK", recorder.events.get(recorder.events.size() - 1));
     }
 
-    // ---- Trades that are not allowed -------------------------------------------------------------------
+    // ---- Intercambios no permitidos --------------------------------------------------------------------
 
     private static IllegalMoveException rejected(GameState state, TradeAction action) {
         Game game = new Game(state);
@@ -210,7 +210,7 @@ class TradeActionTest {
         assertTrue(rejected(state, new TradeAction(pos("a4"), PieceType.QUEEN)).getMessage().contains("check"));
     }
 
-    // ---- Undo and redo ---------------------------------------------------------------------------------
+    // ---- Deshacer y rehacer ----------------------------------------------------------------------------
 
     @Test
     void undoRevertsTheTradeAndGivesTheTradeBack() {
@@ -240,7 +240,7 @@ class TradeActionTest {
 
     @Test
     void theBenchGrowsWithCapturesAndFeedsTheTrade() {
-        // End to end: a real capture puts a piece on the bench, and that piece can then be traded back in.
+        // Flujo completo: una captura deja una pieza en el banco y luego se la puede cambiar por otra.
         Game game = new Game();
         play(game, "e2e4", "d7d5", "e4d5", "g8f6");
         assertEquals(List.of(PieceType.PAWN), types(game.bench(Team.BLACK)));

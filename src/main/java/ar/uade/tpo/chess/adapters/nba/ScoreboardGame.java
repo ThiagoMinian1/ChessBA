@@ -9,20 +9,20 @@ import ar.uade.tpo.chess.core.model.Team;
 import java.util.Optional;
 
 /**
- * Mechanic 4 - scoreboard (pattern: Decorator).
+ * Mecánica 4: marcador (patrón Decorator).
  *
- * <p>Every capture scores the captured piece's value for the capturer (pawn 1, knight 3, bishop 3, rook 5,
- * queen 9). If the game ends in a draw, the team with more points wins on the scoreboard.
+ * <p>Cada captura suma al captor el valor de la pieza capturada (peón 1, caballo 3, alfil 3, torre 5 y dama 9).
+ * Si la partida termina en tablas, gana el bando con más puntos.
  *
- * <p><b>Mandatory TP rule it changes: the result of a drawn game.</b> Standard chess has draws; with this
- * mechanic a draw by stalemate, threefold repetition, the fifty-move rule or insufficient material is decided
- * by points, and is still a draw only if the scores are level. A draw <i>by agreement</i> is never decided on
- * points: both players chose it. {@link #status()} still reports the real chess status (for example
- * {@code DRAW_FIFTY_MOVE_RULE}); only {@link #winner()} reflects the scoreboard, and
- * {@link #decidedOnPoints(ChessGame)} tells a front end which of the two happened.
+ * <p><b>Regla obligatoria del TP que modifica: el resultado de una partida en tablas.</b> En el ajedrez estándar
+ * hay varias formas de empatar; con esta mecánica, el ahogado, la repetición triple, la regla de los 50 movimientos
+ * y el material insuficiente se deciden por puntos. Solo siguen siendo tablas si el marcador está igualado.
+ * Las tablas <i>por acuerdo</i> no se deciden por puntos: las eligieron ambos jugadores. {@link #status()} sigue
+ * informando el resultado real del ajedrez (por ejemplo, {@code DRAW_FIFTY_MOVE_RULE}); solo {@link #winner()}
+ * refleja el marcador, y {@link #decidedOnPoints(ChessGame)} permite saber qué resultado se aplicó.
  *
- * <p>How it is switched off: do not add this decorator. The scores live in the game state's extensions, so
- * undo and redo keep them in step with the board.
+ * <p>Para desactivarlo, no se agrega este decorador. Los puntos se guardan en las extensiones del estado, así
+ * que al deshacer o rehacer una jugada el marcador se mantiene sincronizado con el tablero.
  */
 public final class ScoreboardGame extends GameDecorator {
 
@@ -41,12 +41,12 @@ public final class ScoreboardGame extends GameDecorator {
         return chessWinner.isPresent() ? chessWinner : pointsWinner(delegate);
     }
 
-    /** The points of {@code team} in any game (0 when this mechanic is not enabled). */
+    /** Puntos de {@code team} en la partida (0 si esta mecánica está desactivada). */
     public static int scoreOf(ChessGame game, Team team) {
         return game.extension(ScoreboardAction.KEY, Scores.class).orElseGet(Scores::fresh).of(team);
     }
 
-    /** True when the game is a drawn one (not by agreement) that the scoreboard turns into a win. */
+    /** Indica si el marcador convirtió en victoria unas tablas que no fueron por acuerdo. */
     public static boolean decidedOnPoints(ChessGame game) {
         return pointsWinner(game).isPresent();
     }

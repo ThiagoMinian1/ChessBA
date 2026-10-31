@@ -2,7 +2,7 @@ package ar.uade.tpo.chess.core.game;
 
 import ar.uade.tpo.chess.core.model.GameStatus;
 
-/** Both players agree to a draw. Asking and accepting is the adapter's job; the core only records the result. */
+/** Ambos jugadores acuerdan tablas. El adaptador se ocupa de pedir y aceptar; el núcleo solo registra el resultado. */
 public final class AgreeDrawAction implements TurnAction {
 
     @Override

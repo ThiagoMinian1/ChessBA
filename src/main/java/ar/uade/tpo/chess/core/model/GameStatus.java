@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.model;
 
-/** Where a game stands. Everything except {@code ONGOING} ends the game. */
+/** Estado de la partida. Cualquier valor distinto de {@code ONGOING} indica que terminó. */
 public enum GameStatus {
     ONGOING,
     CHECKMATE,

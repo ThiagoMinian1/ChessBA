@@ -46,7 +46,7 @@ class MoveGeneratorTest {
 
     @Test
     void whenInCheckOnlyMovesThatResolveItAreLegal() {
-        // The rook on e8 checks the king on e1. White can block with the rook on a4 on e4, or move the king.
+        // La torre de e8 da jaque al rey de e1. Las blancas pueden bloquear con la torre de a4 en e4 o mover el rey.
         Board board = boardOf("Ke1", "Ra4", "re8", "ka8");
         List<Move> moves = MoveGenerator.legalMoves(board, Team.WHITE, null);
         assertTrue(targets(MoveGenerator.legalMovesFrom(board, Team.WHITE, null, pos("a4"))).equals(Set.of("e4")));
@@ -56,7 +56,7 @@ class MoveGeneratorTest {
     @Test
     void aCheckingPieceMayBeCaptured() {
         Board board = boardOf("Ke1", "Ra8", "re8", "kh8");
-        // Ra8 can capture the checking rook on e8 along the rank (b8..d8 empty).
+        // Ta8 puede capturar la torre de e8 que da jaque (b8-d8 están vacías).
         assertTrue(targets(MoveGenerator.legalMovesFrom(board, Team.WHITE, null, pos("a8"))).contains("e8"));
     }
 
@@ -82,7 +82,7 @@ class MoveGeneratorTest {
     @Test
     void hasLegalMoveAgreesWithTheFullList() {
         assertTrue(MoveGenerator.hasLegalMove(Board.standard(), Team.WHITE, null));
-        // Stalemate: black king a8 boxed in by Kb6 and Qc7, not in check.
+        // Ahogado: el rey negro de a8 está encerrado por Rb6 y Dc7, pero no está en jaque.
         Board stalemate = boardOf("ka8", "Kb6", "Qc7");
         assertFalse(MoveGenerator.hasLegalMove(stalemate, Team.BLACK, null));
         assertTrue(MoveGenerator.legalMoves(stalemate, Team.BLACK, null).isEmpty());

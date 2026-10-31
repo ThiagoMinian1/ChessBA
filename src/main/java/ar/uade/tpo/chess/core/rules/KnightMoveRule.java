@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.rules;
 
-/** Knight: an L-shaped jump (two squares one way, one the other); it leaps over any piece in between. */
+/** Caballo: salta en forma de L (dos casillas en una dirección y una en la otra), incluso por encima de otras piezas. */
 public final class KnightMoveRule extends StepMoveRule {
 
     @Override

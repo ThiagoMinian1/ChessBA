@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.rules;
 
-/** Direction and offset tables shared by the movement rules and the attack detector. Each entry is {file, rank}. */
+/** Direcciones y desplazamientos compartidos por las reglas de movimiento y el detector de ataques. Cada entrada es {columna, fila}. */
 public final class Directions {
 
     public static final int[][] ORTHOGONAL = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};

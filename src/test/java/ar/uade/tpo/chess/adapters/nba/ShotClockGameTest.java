@@ -44,7 +44,7 @@ class ShotClockGameTest {
         return NbaGameFactory.decorate(gameOf(turn, placements), config, listener);
     }
 
-    // ---- The clock runs and expires --------------------------------------------------------------------
+    // ---- El reloj avanza y vence -----------------------------------------------------------------------
 
     @Test
     void anExpiredClockCostsTheTeamItsNextTurn() {
@@ -54,7 +54,7 @@ class ShotClockGameTest {
         assertTrue(ShotClockGame.stateOf(game, Team.WHITE).isExpired());
 
         play(game, "b8c8");
-        // White's clock had expired, so white loses its turn and black moves again.
+        // Venció el reloj de las blancas, así que pierden el turno y las negras vuelven a jugar.
         assertEquals(Team.BLACK, game.currentTurn());
         assertEquals(ShotClockState.fresh(), ShotClockGame.stateOf(game, Team.WHITE), "the clock resets after a skip");
         assertEquals(List.of("warn WHITE 1", "warn BLACK 1", "violation WHITE"), heard);
@@ -99,7 +99,7 @@ class ShotClockGameTest {
         assertEquals("violation BLACK", heard.get(heard.size() - 1));
     }
 
-    // ---- Progress resets the clock ---------------------------------------------------------------------
+    // ---- El progreso reinicia el reloj -----------------------------------------------------------------
 
     @Test
     void movingAPawnCountsAsProgress() {
@@ -128,7 +128,7 @@ class ShotClockGameTest {
         assertEquals(2, ShotClockGame.stateOf(game, Team.BLACK).movesWithoutProgress());
     }
 
-    // ---- Observer notifications ------------------------------------------------------------------------
+    // ---- Avisos al observador --------------------------------------------------------------------------
 
     @Test
     void teamsAreWarnedWhenThreeMovesRemain() {
@@ -151,7 +151,7 @@ class ShotClockGameTest {
         assertEquals(List.of("warn WHITE 1"), heard);
     }
 
-    // ---- Interaction with check ------------------------------------------------------------------------
+    // ---- Interacción con el jaque ----------------------------------------------------------------------
 
     @Test
     void aTeamInCheckKeepsItsTurnEvenWithAnExpiredClock() {
@@ -163,19 +163,19 @@ class ShotClockGameTest {
         assertTrue(ShotClockGame.stateOf(game, Team.WHITE).isExpired(), "white is still on an expired clock");
 
         play(game, "h1g2");
-        // White escaped the check; now it is black (expired and not in check) who loses a turn.
+        // Las blancas salieron del jaque; ahora las negras, con el reloj vencido y sin jaque, pierden el turno.
         assertEquals(Team.WHITE, game.currentTurn());
         assertEquals(List.of("violation BLACK"), heard);
     }
 
-    // ---- Mechanic off, and construction ----------------------------------------------------------------
+    // ---- Mecánica desactivada y construcción -----------------------------------------------------------
 
     @Test
     void withoutTheMechanicTurnsAlwaysAlternate() {
         Game base = gameOf(Team.WHITE, "Kg1", "Ra1", "kg8", "ra8");
         ChessGame game = NbaGameFactory.decorate(base, GameConfig.standard());
         assertSame(base, game, "no decorator is added for the standard configuration");
-        // Sixteen quiet rook moves that never repeat a position (so the repetition rule stays out of the way).
+        // Dieciséis movimientos tranquilos de torre sin repetir posiciones (para no activar la regla de repetición).
         String[] moves = {
             "a1b1", "a8b8", "b1b2", "b8b7", "b2c2", "b7c7", "c2c3", "c7c6",
             "c3d3", "c6d6", "d3d4", "d6d5", "d4e4", "d5e5", "e4e3", "e5e6"};

@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Read-only view of one cell of the board: where it is ({@link Position}) and what, if anything, stands on it.
+ * Vista de solo lectura de una casilla: su posición ({@link Position}) y la pieza que haya en ella, si existe.
  */
 public record Square(Position position, Piece piece) {
 

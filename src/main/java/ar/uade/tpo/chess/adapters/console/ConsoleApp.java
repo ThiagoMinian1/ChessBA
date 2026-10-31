@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-/** Entry point: plays a full game on stdin/stdout. Run with {@code java -jar chess-1.0.0.jar} after {@code mvn package}. */
+/** Punto de entrada para jugar desde stdin/stdout. Ejecutar {@code java -jar chess-1.0.0.jar} después de {@code mvn package}. */
 public final class ConsoleApp {
 
     private ConsoleApp() {

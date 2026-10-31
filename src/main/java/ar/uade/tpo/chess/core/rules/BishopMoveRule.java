@@ -1,6 +1,6 @@
 package ar.uade.tpo.chess.core.rules;
 
-/** Bishop: any distance along diagonals. */
+/** Alfil: se desplaza cualquier cantidad de casillas en diagonal. */
 public final class BishopMoveRule extends LinearMoveRule {
 
     @Override

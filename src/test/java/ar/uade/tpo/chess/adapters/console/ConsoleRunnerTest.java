@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Drives the whole console flow with scripted input, exactly as a player would type it. */
+/** Recorre el flujo completo de la consola con una entrada preparada, como si la escribiera un jugador. */
 class ConsoleRunnerTest {
 
     private static String run(String... lines) {
@@ -31,7 +31,7 @@ class ConsoleRunnerTest {
         assertTrue(output.contains(expected), "expected output to contain: " + expected + "\n--- output ---\n" + output);
     }
 
-    // ---- A full game -----------------------------------------------------------------------------------
+    // ---- Partida completa ------------------------------------------------------------------------------
 
     @Test
     void aWholeStandardGameCanBePlayedToCheckmate() {
@@ -77,7 +77,7 @@ class ConsoleRunnerTest {
         assertContains(output, "Check! Black is in check.");
     }
 
-    // ---- Undo, redo, resign, draw ----------------------------------------------------------------------
+    // ---- Deshacer, rehacer, abandonar y acordar tablas -------------------------------------------------
 
     @Test
     void undoAndRedoWork() {
@@ -109,7 +109,7 @@ class ConsoleRunnerTest {
         assertContains(output, "Last action undone.");
     }
 
-    // ---- Promotion -------------------------------------------------------------------------------------
+    // ---- Promoción -------------------------------------------------------------------------------------
 
     private static final String[] PROMOTION_SETUP = {
         "1", "h2 h4", "g7 g5", "h4 g5", "h7 h6", "g5 h6", "a7 a6", "h6 h7", "a6 a5"
@@ -146,7 +146,7 @@ class ConsoleRunnerTest {
         assertContains(output, "Action redone.");
     }
 
-    // ---- Setup -----------------------------------------------------------------------------------------
+    // ---- Configuración ---------------------------------------------------------------------------------
 
     @Test
     void anInvalidModeIsAskedAgain() {
@@ -189,7 +189,7 @@ class ConsoleRunnerTest {
         assertContains(output, "Lakers Rookie moves e2 -> e4");
     }
 
-    // ---- Mechanics through the console -----------------------------------------------------------------
+    // ---- Mecánicas desde la consola --------------------------------------------------------------------
 
     @Test
     void allMechanicsModeShowsTheShotClockAndAllowsTheTrade() {
@@ -234,7 +234,7 @@ class ConsoleRunnerTest {
 
     @Test
     void theHotHandAnnouncesTheExtraMoveWithTeamNames() {
-        // Black captures twice on consecutive own moves (Qxd5, then Qxg2) and so moves again (Qxh1).
+        // Las negras capturan en dos jugadas propias seguidas (Qxd5 y luego Qxg2) y vuelven a jugar (Qxh1).
         String output = run("2", "", "lakers", "celtics",
                 "e2 e4", "d7 d5", "e4 d5", "d8 d5", "b1 c3", "d5 g2", "g2 h1", "c3 e4", "quit");
         assertContains(output, "Boston Celtics moves again");
@@ -258,7 +258,7 @@ class ConsoleRunnerTest {
 
     @Test
     void aDrawnGameIsAnnouncedAsWonOnPointsOrAsLevel() {
-        // Both sides shuffle knights: threefold repetition with no captures -> the scoreboard is level.
+        // Ambos bandos mueven los caballos sin capturas hasta repetir la posición tres veces: quedan empatados.
         String output = run("3", "n", "n", "n", "y", "lakers", "celtics",
                 "g1 f3", "g8 f6", "f3 g1", "f6 g8", "g1 f3", "g8 f6", "f3 g1", "f6 g8", "quit");
         assertContains(output, "Draw by threefold repetition");
@@ -272,7 +272,7 @@ class ConsoleRunnerTest {
         assertContains(output, "Black bench: P = Black Pawn");
     }
 
-    // ---- Help ------------------------------------------------------------------------------------------
+    // ---- Ayuda -----------------------------------------------------------------------------------------
 
     @Test
     void helpListsTheCommandsAndOmitsTheTradeWhenItIsOff() {

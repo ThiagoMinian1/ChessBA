@@ -16,15 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Guards the hexagonal architecture mechanically, so the dependency rules the professor approved cannot erode
- * silently: it reads the source files and checks their imports.
+ * Comprueba automáticamente que se respete la arquitectura hexagonal. Lee los archivos fuente y revisa sus
+ * imports para detectar cambios accidentales en las dependencias.
  *
  * <ul>
- *   <li>the core depends on nothing but the JDK, itself, and the ports;</li>
- *   <li>within the core, {@code model} knows nothing of {@code rules} or {@code game}, and {@code rules} knows
- *       nothing of {@code game};</li>
- *   <li>ports depend only on the JDK and the core model;</li>
- *   <li>nothing themed (NBA, Swing, JavaFX) ever appears in the core.</li>
+ *   <li>el núcleo solo depende del JDK, de sí mismo y de los puertos;</li>
+ *   <li>dentro del núcleo, {@code model} no conoce {@code rules} ni {@code game}, y {@code rules} no conoce
+ *       {@code game};</li>
+ *   <li>los puertos solo dependen del JDK y del modelo del núcleo;</li>
+ *   <li>ningún tema o tecnología externa (NBA, Swing, JavaFX) aparece en el núcleo.</li>
  * </ul>
  */
 class ArchitectureTest {

@@ -1,5 +1,5 @@
-%% Mermaid class diagram of the chess project (paste into a ```mermaid block, mermaid.live, or most Markdown viewers).
-%% It shows the same classes as chess-classes.puml; members are trimmed to the essential ones.
+%% Diagrama de clases del proyecto de ajedrez en Mermaid (se puede pegar en un bloque ```mermaid, mermaid.live o un visor Markdown).
+%% Muestra las mismas clases que chess-classes.puml, con solo sus miembros principales.
 classDiagram
 direction TB
 
@@ -114,7 +114,7 @@ namespace adapters_console {
   class ConsoleGameObserver
 }
 
-%% model
+%% modelo
 Piece <|-- Pawn
 Piece <|-- Rook
 Piece <|-- Knight
@@ -130,7 +130,7 @@ PlacedPiece --> Piece
 Move --> Position
 Move --> MoveType
 
-%% rules
+%% reglas
 MoveRule <|.. LinearMoveRule
 MoveRule <|.. StepMoveRule
 MoveRule <|.. PawnMoveRule
@@ -151,7 +151,7 @@ MoveGenerator ..> AttackDetector
 MoveApplier ..> MoveOutcome
 MoveApplier ..> PieceFactory
 
-%% game
+%% partida
 ChessGame <|.. Game
 ChessGame <|.. GameDecorator
 GameDecorator o-- ChessGame : delegate
@@ -173,7 +173,7 @@ MoveAction ..> MoveGenerator
 MoveAction ..> MoveApplier
 IllegalMoveException <|-- PromotionRequiredException
 
-%% adapters
+%% adaptadores
 GameObserver <|.. ConsoleGameObserver
 PieceTheme <|.. StandardPieceTheme
 PieceTheme <|.. NbaPieceTheme

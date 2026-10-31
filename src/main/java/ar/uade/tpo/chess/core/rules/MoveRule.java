@@ -7,16 +7,16 @@ import ar.uade.tpo.chess.core.model.Position;
 import java.util.List;
 
 /**
- * Strategy: how one kind of piece moves. A rule only produces <em>pseudo-legal</em> moves, i.e. moves that
- * respect the piece's own geometry and blocking, but that may still leave the mover's own king in check.
- * Filtering those out is the job of {@link MoveGenerator}, so every rule stays small and independent.
+ * Estrategia que define cómo se mueve un tipo de pieza. Solo genera movimientos <em>pseudo-legales</em>:
+ * respetan la forma de moverse y los bloqueos, pero todavía podrían dejar al rey propio en jaque.
+ * {@link MoveGenerator} descarta esos movimientos para mantener cada regla sencilla e independiente.
  */
 public interface MoveRule {
 
     /**
-     * @param context the board (and en passant target) to move on
-     * @param from    where the piece currently stands
-     * @param piece   the piece to move; its team decides direction and what counts as a capture
+     * @param context tablero en el que se mueve y casilla de captura al paso, si corresponde
+     * @param from    posición actual de la pieza
+     * @param piece   pieza que se mueve; su bando determina la dirección y qué cuenta como captura
      */
     List<Move> pseudoLegalMoves(MoveContext context, Position from, Piece piece);
 }

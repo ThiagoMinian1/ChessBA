@@ -6,8 +6,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The 30 NBA franchises a player can pick. This is an adapter concept: the core only knows
- * {@code Team.WHITE} and {@code Team.BLACK}, which is why this is not called {@code Team}.
+ * Las 30 franquicias de la NBA que se pueden elegir. Este concepto pertenece al adaptador: el núcleo solo conoce
+ * {@code Team.WHITE} y {@code Team.BLACK}; por eso esta clase no se llama {@code Team}.
  */
 public enum Franchise {
     ATLANTA_HAWKS("Atlanta", "Hawks", "ATL"),
@@ -55,25 +55,25 @@ public enum Franchise {
         return city;
     }
 
-    /** The team name without the city, e.g. "Lakers". */
+    /** Nombre del equipo sin la ciudad, por ejemplo, "Lakers". */
     public String nickname() {
         return nickname;
     }
 
-    /** Three-letter code, e.g. "LAL". */
+    /** Código de tres letras, por ejemplo, "LAL". */
     public String abbreviation() {
         return abbreviation;
     }
 
-    /** City and nickname, e.g. "Los Angeles Lakers". */
+    /** Ciudad y nombre del equipo, por ejemplo, "Los Angeles Lakers". */
     public String displayName() {
         return city + " " + nickname;
     }
 
     /**
-     * Finds a franchise by abbreviation, nickname or full name (case and punctuation insensitive), or by a
-     * fragment of the full name when that fragment identifies exactly one franchise.
-     * "lakers", "LAL" and "los angeles lakers" all find the Lakers; "los angeles" is ambiguous and finds none.
+     * Busca una franquicia por su abreviatura, nombre o nombre completo, sin distinguir mayúsculas ni puntuación.
+     * También acepta un fragmento del nombre completo si identifica una sola franquicia.
+     * "lakers", "LAL" y "los angeles lakers" devuelven los Lakers; "los angeles" es ambiguo y no devuelve ninguno.
      */
     public static Optional<Franchise> find(String query) {
         if (query == null) {
