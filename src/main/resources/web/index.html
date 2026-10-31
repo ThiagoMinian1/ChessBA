@@ -36,23 +36,12 @@
 
   <section class="heading"><div><h1>Sala de juego</h1><p>Jugá con otra persona en este dispositivo.</p></div><div class="heading-actions"><button class="secondary" id="backMenu">Menú</button><button class="secondary" id="gameResult" hidden>Ver resultado</button><button class="primary" id="newOpen"><span>＋</span> Nueva partida</button></div></section>
   <div class="workspace">
-    <aside class="arena-scoreboard" id="arenaScoreboard" aria-label="Marcador del partido">
-      <div class="scoreboard-top"><span class="scoreboard-live" id="scoreboardStatus">EN JUEGO</span><span>CHESSBA ARENA</span></div>
-      <div class="scoreboard-possession" id="scoreboardTurn"></div>
-      <div class="scoreboard-teams">
-        <div class="scoreboard-team"><span class="scoreboard-label">LOCAL</span><div id="scoreboardWhiteLogo"></div><strong id="scoreboardWhiteName"></strong><span class="scoreboard-digits" id="scoreboardWhiteScore">0</span></div>
-        <span class="scoreboard-divider" aria-hidden="true">:</span>
-        <div class="scoreboard-team"><span class="scoreboard-label">VISITANTE</span><div id="scoreboardBlackLogo"></div><strong id="scoreboardBlackName"></strong><span class="scoreboard-digits" id="scoreboardBlackScore">0</span></div>
-      </div>
-      <div class="scoreboard-footer"><span>JUGADA <b id="scoreboardMove">00</b></span><span id="scoreboardCaption">PUNTOS POR CAPTURAS</span></div>
-      <p class="scoreboard-rules" id="scoreboardRules"></p>
-      <div id="scoreboardCapture" class="scoreboard-capture" role="status" aria-live="polite" hidden></div>
-    </aside>
+    <div class="score-bench-column"><section id="benchTab" class="courtside-bench" aria-labelledby="bankTitle"><div class="bench-panel-heading"><h3 id="bankTitle" tabindex="-1">Banco de suplentes</h3><span id="bankEntryCount">0</span></div><p id="bankEntryCopy" class="bench-description"></p><div id="bench"></div><p id="tradeHint" class="bench-description"></p><button id="bankChooseBoard" class="secondary">Elegir pieza del tablero</button></section></div>
     <section class="board-column" aria-label="Tablero de ajedrez">
       <div class="board-stage">
         <div class="stage-topline"><span class="stage-label"><i></i> <span id="arenaBadge">PARTIDA LOCAL</span></span><span class="stage-edition">Ajedrez × NBA</span></div>
-        <section class="match-card" aria-label="Equipos de la partida"><div class="match-team" id="matchWhite"></div><div class="match-divider"><span>VS</span><small id="matchAction">A JUGAR</small></div><div class="match-team away" id="matchBlack"></div></section>
-        <div class="board-frame"><div id="board" class="board" role="group" aria-label="Tablero interactivo"></div><svg class="court-art" viewBox="0 0 500 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <section class="match-card" aria-label="Equipos de la partida"><div class="match-team" id="matchWhite"></div><div class="match-divider"><div class="match-score" aria-label="Puntaje"><span id="scoreboardWhiteScore">0</span><span class="match-score-separator">–</span><span id="scoreboardBlackScore">0</span></div><small id="scoreboardCaption">PUNTOS POR CAPTURAS</small><small id="matchAction">A JUGAR</small></div><div class="match-team away" id="matchBlack"></div></section>
+        <div id="scoreboardCapture" class="scoreboard-capture" role="status" aria-live="polite" hidden></div><div class="board-frame"><div id="board" class="board" role="group" aria-label="Tablero interactivo"></div><svg class="court-art" viewBox="0 0 500 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
   <g class="court-paint"><path d="M187 30h126v196H187ZM187 770V574h126v196Z"/></g>
   <g class="court-lines">
     <rect x="32" y="30" width="436" height="740"/>
@@ -69,7 +58,7 @@
     <g id="courtBrand" class="court-logo"><text y="7" class="court-logo-main">CHESSBA</text><text y="24" class="court-logo-sub">BASKETBALL CHESS</text></g>
   </g>
   <g class="court-baselines"><text id="courtAway" x="250" y="22">NEGRAS</text><text id="courtHome" x="250" y="788">BLANCAS</text></g>
-</svg><div id="playMoment" class="play-moment" aria-hidden="true" hidden></div></div>
+</svg><div id="captureCelebration" class="capture-celebration" aria-hidden="true" hidden><div class="capture-card"><div id="captureTeam" class="capture-team"></div><svg class="basket-highlight" viewBox="0 0 240 170" fill="none" aria-hidden="true"><defs><radialGradient id="ballLeather" cx=".3" cy=".25" r=".8"><stop stop-color="#ffb66c"/><stop offset=".65" stop-color="#e87b32"/><stop offset="1" stop-color="#b94b22"/></radialGradient></defs><path d="M152 25h56v58h-56z" fill="#c5d1da0a" stroke="#a5b1b9" stroke-width="2"/><path d="M171 55h22v20h-22" stroke="#eceded" stroke-width="2"/><g class="highlight-net"><path d="M151 94l9 33h32l11-33M155 105h43M158 116h36M162 95l10 32M177 95v32M193 95l-10 32" stroke="#f1eee6" stroke-width="1.7" stroke-linecap="round"/></g><ellipse cx="177" cy="92" rx="28" ry="5" fill="#15191a" stroke="#ed986b" stroke-width="4"/><g class="celebration-ball"><circle cx="64" cy="64" r="23" fill="url(#ballLeather)" stroke="#8c4127" stroke-width="1.5"/><path d="M41 64h46M64 41v46M48 47q30 17 0 34M80 47q-30 17 0 34" stroke="#793e29" stroke-width="1.6"/></g></svg><div class="capture-card-copy"><span id="captureHeadline">CANASTA LIMPIA</span><strong id="captureReward">+1</strong><small id="captureDetail"></small></div></div></div><div id="playMoment" class="play-moment" aria-hidden="true" hidden></div></div>
         <div class="board-toolbar"><span id="boardHint">Seleccioná una pieza para empezar</span><div class="board-tools"><button class="skin-toggle" id="jerseyToggle" aria-pressed="false" hidden title="Alternar piezas clásicas y camisetas">Camisetas</button><button class="icon-button" id="flip" title="Girar tablero" aria-label="Girar tablero">⇅</button><button class="icon-button" id="effectsToggle" aria-pressed="true" aria-label="Desactivar efectos visuales" title="Efectos visuales">✧</button><button class="icon-button" id="sound" aria-label="Silenciar sonidos" aria-pressed="true">♫</button></div></div>
       </div>
       <section class="learn-guide" id="learnGuide" aria-live="polite"><div id="learnIcon" class="learn-icon"></div><div><span id="learnBadge" class="eyebrow">Una mano para empezar</span><h3 id="learnTitle">¿Es tu primera partida?</h3><p id="learnText">Seleccioná una pieza y te mostramos dónde puede ir.</p></div><button class="help-link" id="learnRules">Ver reglas ↗</button></section>
@@ -77,14 +66,14 @@
     <div class="right-column">
       <aside class="game-panel" aria-label="Estado e historial de la partida">
         <div class="panel-heading"><span class="eyebrow">La partida</span><span class="mode-pill" id="modePill">CLÁSICO</span></div>
-        <div class="game-state"><h2 id="turnTitle">Preparando partida</h2><p class="turn-copy" id="turnCopy">Un momento. Estamos preparando el tablero.</p><div class="turn-indicator" id="turnIndicator"></div></div>
+        <div class="game-state"><h2 id="turnTitle" aria-live="polite">Preparando partida</h2><p class="turn-copy" id="turnCopy">Un momento. Estamos preparando el tablero.</p><div class="turn-indicator" id="turnIndicator"></div></div>
         <div class="panel-tabs"><button class="selected" data-tab="history">Jugadas <span id="moveCount">0</span></button><button data-tab="bench">Banco <span id="benchCount">0</span></button></div>
         <section id="historyTab"><p id="progressClock" class="progress-clock"></p><div class="history-head"><span>#</span><span>MOVIMIENTO</span></div><div id="history" class="history"></div></section>
-        <section id="benchTab" hidden><p class="bench-description">Piezas disponibles en el banco de cada equipo.</p><div id="bench"></div><p id="tradeHint" class="bench-description"></p></section>
+
         <div class="history-controls"><button id="undo" aria-label="Deshacer última jugada">↶ <span>Deshacer</span></button><button id="redo" aria-label="Rehacer jugada">↷ <span>Rehacer</span></button></div>
-        <div class="game-actions"><button id="draw">½ Proponer tablas</button><button id="resign">⚑ Rendirse</button></div>
+        <section id="drawOfferPanel" class="draw-offer-panel" hidden><strong id="drawOfferTitle"></strong><p id="drawOfferCopy"></p><div><button id="drawAccept" class="secondary">Aceptar tablas</button><button id="drawReject" class="secondary">Seguir jugando</button></div></section><div class="game-actions"><button id="draw">½ Proponer tablas</button><button id="resign">⚑ Rendirse</button></div>
       </aside>
-      <section id="mechanics" class="mechanics" aria-label="Mecánicas NBA"></section><section class="arena-audio" aria-label="Sonidos de la tribuna"><div><strong>Tribuna</strong><small>Palmas y cantos, de vez en cuando.</small></div><div class="crowd-controls"><select id="crowdPreset" aria-label="Elegir canto de tribuna"><option value="defense">Defense</option><option value="letsgo">Let's go</option><option value="claps">Palmas</option></select><button id="crowdToggle" aria-pressed="false">Activar</button><button id="crowdTest" aria-label="Probar sonido de tribuna" title="Escuchar una muestra">&#9654;</button></div></section>
+      <section id="mechanics" class="mechanics" aria-label="Mecánicas NBA"></section><section class="arena-audio" aria-label="Sonidos de la tribuna"><div><strong>Tribuna</strong><small>Hinchas grabados en un partido de basket.</small></div><div class="crowd-controls"><select id="crowdPreset" aria-label="Elegir canto de tribuna"><option value="defense">Ambiente de cancha</option><option value="letsgo">Tribuna intensa</option><option value="claps">Fragmento breve</option></select><button id="crowdToggle" aria-pressed="false">Activar</button><button id="crowdTest" aria-label="Probar sonido de tribuna" title="Escuchar una muestra">&#9654;</button></div></section>
       <div class="roster-legend" id="rosterLegend" hidden></div>
       <button class="nba-cta" id="nbaQuick"><span class="cta-ball" aria-hidden="true"></span><span><strong>Jugar con equipos NBA</strong><span>Elegí tus franquicias y las reglas de la partida.</span></span><b>↗</b></button>
     </div>

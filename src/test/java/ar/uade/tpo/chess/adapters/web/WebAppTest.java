@@ -32,11 +32,23 @@ class WebAppTest {
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
     }
 
+    private HttpResponse<String> agreeDraw() throws Exception {
+        String state = post("draw-offer", "").body();
+        String rival = state.contains("\"drawOffer\":\"WHITE\"") ? "BLACK" : "WHITE";
+        return post("draw-response", "team=" + rival + "&response=accept");
+    }
     @Test void servesPackagedInterfaceAndRejectsUnknownResources() throws Exception {
         var page = get("/"); assertEquals(200, page.statusCode()); assertTrue(page.body().contains("Tu próxima gran jugada"));
         assertTrue(get("/app.js").body().contains("/api/"));
         assertTrue(get("/style.css").headers().firstValue("Content-Type").orElseThrow().startsWith("text/css"));
         assertEquals(404, get("/pom.xml").statusCode());
+        for(String name:new String[]{"bounce","swish","crowd"}) {
+            var sound=client.send(HttpRequest.newBuilder(URI.create(base+"/"+name+".mp3")).GET().build(),HttpResponse.BodyHandlers.ofByteArray());
+            assertEquals(200,sound.statusCode());
+            assertEquals("audio/mpeg",sound.headers().firstValue("Content-Type").orElseThrow());
+            assertTrue(sound.body().length>1000);
+            assertEquals(405,client.send(HttpRequest.newBuilder(URI.create(base+"/"+name+".mp3")).POST(HttpRequest.BodyPublishers.noBody()).build(),HttpResponse.BodyHandlers.discarding()).statusCode());
+        }
     }
 
     @Test void playsRealGameAndRestoresMateThroughUndoRedo() throws Exception {
@@ -118,7 +130,7 @@ class WebAppTest {
     @Test void appliesCustomMechanicsAndAgreementAndResignation() throws Exception {
         String custom = post("new", "mode=custom&white=LAL&black=BOS&shotClock=true&limit=3&hotHand=false&trade=false").body();
         assertTrue(custom.contains("\"limit\":3")); assertTrue(custom.contains("\"hotHand\":false"));
-        assertTrue(post("draw", "").body().contains("DRAW_BY_AGREEMENT"));
+        assertTrue(agreeDraw().body().contains("DRAW_BY_AGREEMENT"));
         post("undo", "");
         String resignation = post("resign", "").body();
         assertTrue(resignation.contains("RESIGNATION")); assertTrue(resignation.contains("\"winner\":\"BLACK\""));
@@ -129,6 +141,25 @@ class WebAppTest {
                 .POST(HttpRequest.BodyPublishers.ofString("mode=standard")).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(403, response.statusCode()); assertEquals(405, get("/api/new").statusCode());
         assertEquals(413, post("new", "x=" + "a".repeat(8193)).statusCode());
+    }
+
+    @Test void drawOfferRequiresRivalAcceptanceAndCanBeRejectedOrCancelledByMove() throws Exception {
+        String offered=post("draw-offer", "").body();
+        assertTrue(offered.contains("\"drawOffer\":\"WHITE\""));
+        assertTrue(offered.contains("\"status\":\"ONGOING\""));
+        assertEquals(400,post("draw-response","team=WHITE&response=accept").statusCode());
+        assertEquals(offered,get("/api/state").body());
+        assertTrue(post("draw-response","team=BLACK&response=reject").body().contains("\"drawOffer\":\"\""));
+        assertTrue(get("/api/state").body().contains("\"status\":\"ONGOING\""));
+        post("draw-offer", "");
+        assertTrue(moves("e2e4").contains("\"drawOffer\":\"\""));
+        assertEquals(400,post("draw-response","team=BLACK&response=accept").statusCode());
+        post("draw-offer", "");
+        String accepted=post("draw-response","team=WHITE&response=accept").body();
+        assertTrue(accepted.contains("DRAW_BY_AGREEMENT"));
+        assertTrue(accepted.contains("\"drawOffer\":\"\""));
+        assertTrue(post("undo", "").body().contains("\"status\":\"ONGOING\""));
+        assertTrue(post("redo", "").body().contains("DRAW_BY_AGREEMENT"));
     }
 
     @Test void escapesJsonStrings() {
@@ -236,7 +267,7 @@ class WebAppTest {
         assertEquals(405, post("result", "").statusCode());
         post("new", "mode=custom&white=LAL&black=BOS&scoreboard=true");
         for(String move : new String[]{"e2e4","d7d5","e4d5"}) post("move", "from="+move.substring(0,2)+"&to="+move.substring(2));
-        post("draw", "");
+        agreeDraw();
         var result=get("/api/result");
         assertEquals(200,result.statusCode());
         assertTrue(result.body().contains("\"winner\":\"\""));
