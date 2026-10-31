@@ -24,6 +24,7 @@ public final class WebApp {
         GameConfig config = GameConfig.standard();
         String white = "Blancas", black = "Negras", mode = "standard";
         boolean started;
+        Team drawOffer;
     }
 
     public WebApp(int port) throws IOException {
@@ -53,11 +54,22 @@ public final class WebApp {
                     case "/", "/index.html" -> "index.html";
                     case "/app.js" -> "app.js";
                     case "/style.css" -> "style.css";
+                    case "/bounce.mp3" -> "bounce.mp3";
+                    case "/swish.mp3" -> "swish.mp3";
+                    case "/crowd.mp3" -> "crowd.mp3";
                     default -> null;
                 };
                 if (resource == null) { send(exchange, 404, "text/plain", "No encontrado"); return; }
                 try (var in = WebApp.class.getResourceAsStream("/web/" + resource)) {
                     if (in == null) { send(exchange, 404, "text/plain", "No encontrado"); return; }
+                    if (resource.endsWith("mp3")) {
+                        byte[] bytes = in.readAllBytes();
+                        exchange.getResponseHeaders().set("Content-Type", "audio/mpeg");
+                        exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
+                        exchange.getResponseHeaders().set("Cache-Control", "public, max-age=86400");
+                        exchange.sendResponseHeaders(200, bytes.length);
+                        exchange.getResponseBody().write(bytes); return;
+                    }
                     send(exchange, 200, resource.endsWith("css") ? "text/css" : resource.endsWith("js") ? "text/javascript" : "text/html", new String(in.readAllBytes(), StandardCharsets.UTF_8));
                 }
                 return;
@@ -95,13 +107,24 @@ public final class WebApp {
                     case "/api/undo" -> session.game.undo();
                     case "/api/redo" -> session.game.redo();
                     case "/api/resign" -> session.game.resign(session.game.currentTurn());
-                    case "/api/draw" -> session.game.agreeDraw();
+                    case "/api/draw", "/api/draw-offer" -> {
+                        if (session.game.status().isOver() || session.drawOffer != null) throw new IllegalStateException("No se puede proponer tablas ahora.");
+                        session.drawOffer = session.game.currentTurn();
+                    }
+                    case "/api/draw-response" -> {
+                        if (session.drawOffer == null) throw new IllegalStateException("No hay una propuesta de tablas pendiente.");
+                        if (!session.drawOffer.opposite().name().equals(params.get("team"))) throw new IllegalArgumentException("Debe responder el equipo rival.");
+                        if (!List.of("accept", "reject").contains(params.get("response"))) throw new IllegalArgumentException("Respuesta inválida.");
+                        if (params.get("response").equals("accept")) session.game.agreeDraw();
+                        session.drawOffer = null;
+                    }
                     case "/api/trade" -> {
                         if (!session.config.tradeEnabled()) throw new IllegalArgumentException("Los intercambios no están habilitados.");
                         session.game.execute(new TradeAction(Position.of(params.get("square")), PieceType.valueOf(params.get("piece"))));
                     }
                     default -> { send(exchange, 404, "application/json", json(Map.of("error", "Ruta no encontrada"))); return; }
                 }
+                if (mutation && !path.equals("/api/draw") && !path.equals("/api/draw-offer") && !path.equals("/api/draw-response")) session.drawOffer = null;
                 if (mutation && !session.game.history().isEmpty()) session.started = true;
                 send(exchange, 200, "application/json", json(state(session)));
             }
@@ -156,6 +179,7 @@ public final class WebApp {
         result.put("halfmoveClock", g.halfmoveClock());
         result.put("mode", s.mode); result.put("white", s.white); result.put("black", s.black);
         result.put("started", s.started);
+        result.put("drawOffer", s.drawOffer == null ? "" : s.drawOffer.name());
         result.put("scoreboard", s.config.scoreboardEnabled());
         result.put("decidedOnPoints", ScoreboardGame.decidedOnPoints(g));
         result.put("result", gameResult(g, s.config.scoreboardEnabled(), s.white, s.black));

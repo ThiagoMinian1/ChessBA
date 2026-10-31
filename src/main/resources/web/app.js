@@ -92,7 +92,8 @@ function syncAvailability() {
   $('#jerseyToggle').disabled = unavailable;
   $('#undo').disabled = unavailable || !state?.canUndo;
   $('#redo').disabled = unavailable || !state?.canRedo;
-  $('#draw').disabled = unavailable || state?.status !== 'ONGOING';
+  $('#draw').disabled = unavailable || state?.status !== 'ONGOING' || Boolean(state?.drawOffer);
+  $('#drawAccept').disabled=unavailable;$('#drawReject').disabled=unavailable;
   $('#resign').disabled = unavailable || state?.status !== 'ONGOING';
 }
 // Compara las piezas reales del tablero para incluir capturas al paso y de piezas promocionadas.
@@ -104,24 +105,26 @@ function classifyMove(before, after) {
 }
 function showCapture(square, captured, points = 1) {
   clearTimeout(feedbackTimer);
-  const target = $('#board').querySelector(`[data-square="${square}"]`);
-  if (motionAllowed()) target?.classList.add('capture-flash');
-  toast(`Captura · ${names[captured.type]}`, 2000);
+  const benchTeam=state[captured.team==='WHITE'?'white':'black'];
+  toast(`${names[captured.type]} capturado · Fue al banco de ${benchTeam}`, 2500);
   const notice=$('#scoreboardCapture');
   notice.replaceChildren(text('strong','+'+points),text('span',`${state[captured.team==='WHITE'?'black':'white']} · ${names[captured.type]}`));
   notice.hidden=false;
-  notice.classList.remove('score-pop');
-  if(motionAllowed()){void notice.offsetWidth;notice.classList.add('score-pop');}
-  if (motionAllowed()) {
-    if (target) {
-      const ring = text('span','','capture-ring');ring.setAttribute('aria-hidden','true');target.append(ring);
-      for (let i=0;i<6;i++) {const spark=text('span','','capture-spark spark-'+i);spark.setAttribute('aria-hidden','true');target.append(spark);}
-    }
+  const celebration=$('#captureCelebration');
+  const highlights={PAWN:['layup','BANDEJA'],KNIGHT:['crossover','CROSSOVER'],BISHOP:['triple','TRIPLE LIMPIO'],ROOK:['dunk','VOLCADA'],QUEEN:['clutch','JUGADA ESTELAR']};
+  const [variant,headline]=highlights[captured.type]||highlights.PAWN;
+  celebration.dataset.variant=variant;
+  $('#captureHeadline').textContent=headline;
+  $('#captureTeam').replaceChildren(teamMark(franchiseCode(captured.team==='WHITE'?'black':'white')));
+  $('#captureReward').textContent=state.scoreboard?'+'+points:'CAPTURA';
+  $('#captureDetail').textContent=`${names[captured.type]} · ${state[captured.team==='WHITE'?'black':'white']}`;
+  if(effectsOn){
+    celebration.hidden=false;
+    celebration.classList.remove('is-playing');
+    void celebration.offsetWidth;
+    celebration.classList.add('is-playing');
   }
-  feedbackTimer = setTimeout(()=>{
-    $('#board').querySelectorAll('.capture-flash').forEach(el=>el.classList.remove('capture-flash'));
-    $('#board').querySelectorAll('.capture-point, .capture-ring, .capture-spark').forEach(el=>el.remove());
-  },1100);
+  feedbackTimer = setTimeout(()=>{celebration.hidden=true;celebration.classList.remove('is-playing');},1250);
 }
 function motionAllowed() {
   return effectsOn && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -156,7 +159,7 @@ function showMoveMoment(before, params, feedback) {
   if (state.winner && state.status!=='ONGOING') {title='GAME WINNER';description=state.decidedOnPoints?'Victoria por puntos':'Jaque mate. Bien jugado.';kind='winner';}
   else if (hot) {title='ON FIRE';description='Hot hand · Tenés otra jugada';kind='hot';}
   else if (promoted) {title='LEVEL UP';description='Tu peón acaba de ascender';kind='promotion';}
-  else if (feedback.capture) {title='SWISH';description='Canasta limpia';kind='capture';}
+  else if (feedback.capture) return;
   else if (history.includes('shot clock:')) {title='SHOT CLOCK';description='El rival pierde el turno';kind='clock';}
   else if (state.check) {title='EN JAQUE';description='El rey rival necesita una respuesta';kind='check';}
   else return;
@@ -167,6 +170,9 @@ function showMoveMoment(before, params, feedback) {
 }
 function clearPlayEffects() {
   clearTimeout(momentTimer);
+  $('#captureCelebration').hidden=true;
+  $('#captureCelebration').classList.remove('is-playing');
+  $('#board').querySelectorAll('.capture-victim, .capture-burst, .capture-ring, .capture-spark').forEach(el=>el.remove());
   for (const animation of runningAnimations) animation.cancel();
   runningAnimations=[];
   $('#playMoment').hidden=true;
@@ -281,6 +287,12 @@ function render() {
   $('#turnCopy').textContent = over ? state.winner ? `${state[state.winner === 'WHITE' ? 'white' : 'black']} ganó la partida.` : 'La partida terminó en tablas.' : state.check ? 'Hay que salir del jaque para seguir.' : state.history.length ? 'Seleccioná una pieza para ver dónde puede ir.' : 'Las blancas hacen el primer movimiento.';
   $('#turnIndicator').replaceChildren(text('i', '', state.turn === 'BLACK' ? 'black' : ''), text('span', over ? 'Podés deshacer para seguir explorando' : `${state[state.turn === 'WHITE' ? 'white' : 'black']} tiene el turno`));
   $('#modePill').textContent = state.mode === 'standard' ? 'CLÁSICO' : state.mode === 'nba' ? 'NBA COMPLETO' : state.mode === 'theme' ? 'NBA · REGLAS CLÁSICAS' : 'NBA A TU MANERA';
+  $('#drawOfferPanel').hidden=!state.drawOffer;
+  if(state.drawOffer){
+    const proposer=state[state.drawOffer==='WHITE'?'white':'black'],rival=state[state.drawOffer==='WHITE'?'black':'white'];
+    $('#drawOfferTitle').textContent=`${proposer} propone tablas`;
+    $('#drawOfferCopy').textContent=`${rival}: aceptá el empate o elegí seguir jugando. Mover una pieza cancela la propuesta.`;
+  }
   $('#moveCount').textContent = state.history.length;
   $('#progressClock').textContent = `Regla de 50 movimientos: ${state.halfmoveClock ?? 0}/100 medias jugadas sin captura ni movimiento de peón.`;
   $('#benchCount').textContent = state.whiteBench.length + state.blackBench.length;
@@ -304,19 +316,11 @@ function render() {
 }
 function renderArenaScoreboard() {
   const result=state.result;
-  $('#scoreboardStatus').textContent=result?'FINAL':'EN JUEGO';
-  $('#arenaScoreboard').classList.toggle('is-final',Boolean(result));
-  $('#scoreboardTurn').textContent=result?result.reason:`En turno · ${state[state.turn==='WHITE'?'white':'black']}`;
-  for(const side of ['white','black']) {
+  for(const side of ['white','black']){
     const suffix=side==='white'?'White':'Black';
-    $('#scoreboard'+suffix+'Logo').replaceChildren(teamMark(franchiseCode(side)));
-    $('#scoreboard'+suffix+'Name').textContent=state.mode==='standard'?state[side]:franchiseLabel(state[side]).name;
     $('#scoreboard'+suffix+'Score').textContent=state.scoreboard?state[side+'Score']:result?(result.winner?result.winner===side.toUpperCase()?'1':'0':'½'):'—';
-    $('#scoreboard'+suffix+'Name').parentElement.classList.toggle('in-possession',!result&&state.turn===side.toUpperCase());
   }
-  $('#scoreboardMove').textContent=String(state.history.length).padStart(2,'0');
-  $('#scoreboardCaption').textContent=state.scoreboard?'PUNTOS POR CAPTURAS':'RESULTADO DE AJEDREZ';
-  $('#scoreboardRules').textContent=state.scoreboard?'Peón 1 · Caballo y alfil 3 · Torre 5 · Dama 9':'El resultado se define al terminar la partida.';
+  $('#scoreboardCaption').textContent=state.scoreboard?'PUNTOS POR CAPTURAS':'AJEDREZ CLÁSICO';
 }
 function showView(view, focus = true) {
   currentView=view;
@@ -462,22 +466,29 @@ function askPromotion(candidates) {
 function renderBench() {
   const bench = $('#bench'); bench.replaceChildren();
   for (const key of ['white','black']) {
-    const el = text('div', state[key], 'bench-team'), pieces = text('div','','bench-pieces');
+    const el = text('section', '', 'bench-team'), pieces = text('div','','bench-pieces');
+    const heading=text('div','','bench-team-heading'),label=text('div','','');
+    label.append(text('strong',state[key]),text('small',state.turn===key.toUpperCase()?'Tu equipo en turno':'Equipo rival'));
+    heading.append(teamMark(franchiseCode(key)),label);el.append(heading);
+    el.classList.toggle('bench-active',state.turn===key.toUpperCase());
     if (!state[key+'Bench'].length) pieces.append(text('span','Sin piezas en el banco.','bench-description'));
     state[key+'Bench'].forEach(type=>{
-      const button=text('button','','bench-piece');button.append(pieceElement({type,team:key.toUpperCase()}));button.title=`Intercambiar por ${names[type]}`;
+      const button=text('button','','bench-piece');button.append(pieceElement({type,team:key.toUpperCase()}),text('small',names[type]));button.title=`Intercambiar por ${names[type]}`;
       button.setAttribute('aria-label',`Intercambiar pieza seleccionada por ${names[type]}`);
       const own = state.turn === key.toUpperCase();
       const chosen = state.board.find(p=>p.square===selected);
       const invalidPawnRank=type==='PAWN'&&/[18]$/.test(selected||'');
       button.disabled = !state.trade || !own || !chosen || chosen.team!==state.turn || chosen.type === 'KING' || invalidPawnRank || state[key+'Traded'] || state.check || state.status !== 'ONGOING';
       if(invalidPawnRank)button.title='Un peón no puede entrar en la primera ni en la última fila.';
-      button.onclick=async()=>{const square=selected;if(await confirmAction('¿Cambio de estrategia?',`Reemplazar la pieza en ${square} por ${names[type].toLowerCase()}. El intercambio consume tu turno.`)){await action('trade',{square,piece:type});}};
+      button.onclick=async()=>{if(busy)return;const square=selected;if(await confirmAction('¿Cambio de estrategia?',`Reemplazar la pieza en ${square} por ${names[type].toLowerCase()}. El intercambio consume tu turno.`)){await action('trade',{square,piece:type});}};
       pieces.append(button);
     });
     el.append(pieces);bench.append(el);
   }
-  $('#tradeHint').textContent = state.trade ? selected ? 'Elegí una pieza de tu banco para intercambiar. Una vez por equipo.' : 'Para intercambiar, primero seleccioná una pieza propia del tablero.' : 'Activá los intercambios al crear una partida NBA para usar tu banco.';
+  const key=state.turn==='WHITE'?'white':'black',chosen=state.board.find(p=>p.square===selected);
+  $('#bankEntryCount').textContent=state.whiteBench.length+state.blackBench.length;
+  $('#bankEntryCopy').textContent=chosen&&state.trade&&!state[key+'Traded']?`Sale: ${names[chosen.type]} en ${selected}. Elegí abajo quién entra.`:state.trade?'Acá están las piezas que salieron del tablero. Podés recuperar una de tu equipo.':'Piezas capturadas. Este modo no permite recuperarlas.';
+  $('#tradeHint').textContent = !state.trade?'Este modo no permite intercambios. El banco muestra las piezas que salieron del tablero.':state.status!=='ONGOING'?'La partida terminó.':state[key+'Traded']?'Tu equipo ya usó su intercambio.':state.check?'Primero salí del jaque para poder intercambiar.':!state[key+'Bench'].length?'Tu banco está vacío: todavía no tenés piezas para recuperar.':chosen?.type==='KING'?'El rey no se puede intercambiar. Elegí otra pieza propia.':chosen?`Paso 2 · Elegí una pieza habilitada del banco para reemplazar ${names[chosen.type].toLowerCase()} en ${selected}. Consume tu turno.`:'Paso 1 · Seleccioná en el tablero la pieza propia que querés reemplazar. Después elegí cuál recuperar del banco.';
 }
 function confirmAction(title, copy) {
   const d=$('#confirmDialog');$('#confirmTitle').textContent=title;$('#confirmCopy').textContent=copy;
@@ -505,69 +516,50 @@ function syncCrowdControls() {
 }
 function stopCrowd() {
   clearTimeout(crowdEndTimer);
-  if (crowdVoice) {window.speechSynthesis?.cancel();crowdVoice=null;}
+  audioEpoch++;
   for(const node of crowdNodes){try{node.stop();node.disconnect();}catch{/* Ya había terminado. */}}
   crowdNodes=[];crowdPlaying=false;
 }
-function playCrowd(preview = false) {
-  if (!soundOn || (!preview && (!crowdOn || crowdPlaying || Date.now()-crowdLastAt<20000))) return;
-  stopCrowd();unlockSound();crowdPlaying=true;crowdLastAt=Date.now();
-  const beats=crowdPreset==='claps'?[0,.28,.56,1.1,1.38,1.66]:[0,.3,.9,1.2,1.8,2.1];
-  for(const beat of beats)playSound('crowdClap',beat);
-  if(crowdPreset!=='claps') {
-    for(const beat of [0,.9,1.8])playSound('crowdStomp',beat);
-    if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      crowdVoice=new window.SpeechSynthesisUtterance(crowdPreset==='letsgo'?"Let's go! Let's go!":'Defense! Defense!');
-      crowdVoice.lang='en-US';crowdVoice.rate=.88;crowdVoice.pitch=.72;crowdVoice.volume=.42;
-      try{window.speechSynthesis.speak(crowdVoice);}catch{/* El ritmo funciona aunque no haya síntesis de voz. */}
-    }
-  }
-  crowdEndTimer=setTimeout(()=>{crowdPlaying=false;crowdVoice=null;crowdNodes=[];},4000);
+const recordedSounds=new Map();
+const activeRecordings=new Set();
+let audioEpoch=0;
+function recordedBuffer(name){
+  if(!recordedSounds.has(name))recordedSounds.set(name,fetch('/'+name+'.mp3?v=arena-2').then(r=>{if(!r.ok)throw new Error('Audio no disponible');return r.arrayBuffer();}).then(bytes=>audio.decodeAudioData(bytes)).catch(()=>{recordedSounds.delete(name);return null;}));
+  return recordedSounds.get(name);
 }
-function playSound(kind = 'move', delay = 0) {
-  if (!soundOn) return;
-  unlockSound();
-  if (!audio || audio.state !== 'running') return;
-  try {
-    const now = audio.currentTime + delay;
-    const tone = (hz, start, duration, volume = .07, endHz = hz) => {
-      const oscillator = audio.createOscillator(), gain = audio.createGain();
-      oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(hz,start);
-      oscillator.frequency.exponentialRampToValueAtTime(endHz,start+duration);
-      gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(volume,start+.008);
-      gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
-      oscillator.connect(gain);gain.connect(audio.destination);oscillator.start(start);oscillator.stop(start+duration+.01);
-      if(kind.startsWith('crowd'))crowdNodes.push(oscillator);
-      oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
-    };
-    if (kind === 'capture') {
-      tone(115,now,.16,.18,42);
-      // Aire filtrado y un roce breve de la red: una canasta limpia, sin golpear el aro.
-      const duration = .48, buffer = audio.createBuffer(1,Math.ceil(audio.sampleRate*duration),audio.sampleRate);
-      const samples = buffer.getChannelData(0);
-      for (let i=0;i<samples.length;i++) samples[i] = Math.random()*2-1;
-      const source = audio.createBufferSource(), filter = audio.createBiquadFilter(), gain = audio.createGain();
-      source.buffer = buffer; filter.type = 'bandpass';filter.Q.value=.75;
-      filter.frequency.setValueAtTime(4200,now);filter.frequency.exponentialRampToValueAtTime(650,now+.44);
-      gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.28,now+.045);
-      gain.gain.exponentialRampToValueAtTime(.06,now+.19);gain.gain.exponentialRampToValueAtTime(.13,now+.24);
-      gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
-      source.connect(filter);filter.connect(gain);gain.connect(audio.destination);source.start(now);source.stop(now+duration);
-      source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
-    } else if(kind === 'crowdClap') {
-      const buffer=audio.createBuffer(1,Math.ceil(audio.sampleRate*.12),audio.sampleRate),samples=buffer.getChannelData(0);
-      for(let i=0;i<samples.length;i++)samples[i]=Math.random()*2-1;
-      const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();source.buffer=buffer;filter.type='bandpass';filter.frequency.value=1600;filter.Q.value=.7;
-      gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.12,now+.004);gain.gain.exponentialRampToValueAtTime(.018,now+.025);gain.gain.exponentialRampToValueAtTime(.075,now+.035);gain.gain.exponentialRampToValueAtTime(.0001,now+.12);
-      source.connect(filter);filter.connect(gain);gain.connect(audio.destination);source.start(now);source.stop(now+.13);crowdNodes.push(source);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
-    } else if(kind === 'crowdStomp') tone(110,now,.12,.085,55);
-    else if (kind === 'check') {
-      tone(660,now,.13,.045);tone(880,now+.14,.18,.04);
-    } else if (kind === 'win' || kind === 'start') {
-      (kind === 'win' ? [523,659,784,1047] : [392,523,784]).forEach((hz,i)=>tone(hz,now+i*.09,.23,.045));
-    } else if (kind === 'navigate') tone(330,now,.065,.035,260);
-    else { tone(230,now,.065,.12,100);tone(620,now,.035,.025,380); }
-  } catch { /* Se puede jugar al ajedrez aunque el navegador no admita audio. */ }
+async function playRecording(name,{volume=.35,duration=1,delay=0,crowd=false}={}){
+  if(!soundOn)return;
+  unlockSound();if(!audio)return;
+  const epoch=audioEpoch,buffer=await recordedBuffer(name);
+  if(!buffer){if(crowd&&epoch===audioEpoch)crowdPlaying=false;return;}
+  if(!soundOn||(crowd&&(epoch!==audioEpoch||!crowdPlaying)))return;
+  try{
+    await audio.resume();
+    if(!soundOn||(crowd&&epoch!==audioEpoch))return;
+    const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;
+    // Skip initial recording silence, retaining a short natural attack.
+    const data=buffer.getChannelData(0);let start=0;
+    for(let i=0;i<data.length;i+=256){let energy=0;for(let j=i;j<Math.min(i+256,data.length);j++)energy+=data[j]*data[j];if(Math.sqrt(energy/256)>.015){start=Math.max(0,i/buffer.sampleRate-.025);break;}}
+    if(name==='crowd')start=Math.random()*Math.max(0,buffer.duration-duration-.3);
+    const length=Math.min(duration,buffer.duration-start),when=audio.currentTime+delay;
+    if(length<=0)return;
+    const fade=name==='crowd'?Math.min(1,length/3):.015,release=name==='crowd'?Math.min(1.5,length/3):.12;
+    gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(volume,when+fade);gain.gain.setValueAtTime(volume,when+Math.max(fade,length-release));gain.gain.linearRampToValueAtTime(0,when+length);
+    source.connect(gain);gain.connect(audio.destination);source.start(when,start,length);
+    activeRecordings.add(source);
+    if(crowd)crowdNodes.push(source);
+    source.onended=()=>{activeRecordings.delete(source);source.disconnect();gain.disconnect();if(crowd&&epoch===audioEpoch){crowdPlaying=false;crowdNodes=[];}};
+  }catch{if(crowd&&epoch===audioEpoch)crowdPlaying=false;}
+}
+function playCrowd(preview = false){
+  if(!soundOn||(!preview&&(!crowdOn||crowdPlaying||Date.now()-crowdLastAt<20000)))return;
+  stopCrowd();crowdPlaying=true;crowdLastAt=Date.now();
+  playRecording('crowd',{volume:crowdPreset==='letsgo'?.38:.27,duration:crowdPreset==='claps'?6:12,crowd:true});
+}
+function playSound(kind='move',delay=0){
+  if(kind==='capture')playRecording('swish',{volume:.55,duration:1.25,delay});
+  else if(kind==='win')playRecording('crowd',{volume:.4,duration:7,delay});
+  else playRecording('bounce',{volume:kind==='navigate'?.12:kind==='check'?.4:.24,duration:kind==='check'?.9:.48,delay});
 }
 function openNewGame(mode = ['custom','theme'].includes(state?.mode) ? state.mode : 'nba') {
   if (busy || !state || !setupReady) return;
@@ -665,7 +657,7 @@ $('#sound').onclick=()=>{
   soundOn=!soundOn;syncSoundButton();
   try {localStorage.setItem('chessba-sound',soundOn?'on':'off');} catch { /* Preferencia opcional. */ }
   if (soundOn) {unlockSound();audio?.resume().then(()=>playSound('capture')).catch(()=>{});}
-  else {stopCrowd();if(audio?.state==='running')audio.suspend().catch(()=>{});}
+  else {stopCrowd();for(const source of activeRecordings){try{source.stop();}catch{}}activeRecordings.clear();if(audio?.state==='running')audio.suspend().catch(()=>{});}
   toast(soundOn?'Sonidos de cancha activados · swish en cada captura':'Sonidos silenciados');
 };
 $('#crowdToggle').onclick=()=>{
@@ -677,9 +669,18 @@ $('#crowdToggle').onclick=()=>{
 $('#crowdTest').onclick=()=>{unlockSound();audio?.resume().then(()=>playCrowd(true)).catch(()=>{});};
 $('#crowdPreset').onchange=()=>{crowdPreset=$('#crowdPreset').value;stopCrowd();try{localStorage.setItem('chessba-crowd-preset',crowdPreset);}catch{/* Preferencia opcional. */}};
 $('#undo').onclick=()=>action('undo');$('#redo').onclick=()=>action('redo');
-$('#draw').onclick=async()=>{if(await confirmAction('¿Tablas de común acuerdo?','Ambos jugadores deben estar de acuerdo. Confirmar termina la partida en empate.'))await action('draw');};
+$('#draw').onclick=async()=>{const team=state[state.turn==='WHITE'?'white':'black'];if(await confirmAction(`${team}: ¿proponer tablas?`,'Esta es tu confirmación. Después el rival debe aceptar; la partida todavía no termina.'))await action('draw-offer');};
+$('#drawAccept').onclick=async()=>{
+  if(!state.drawOffer||busy)return;
+  const team=state.drawOffer==='WHITE'?'BLACK':'WHITE',offer=state.drawOffer;
+  if(await confirmAction(`${state[team==='WHITE'?'white':'black']}: ¿aceptás las tablas?`,'Esta es la confirmación del segundo jugador. Aceptar termina la partida en empate.')){
+    if(state.drawOffer===offer)await action('draw-response',{team,response:'accept'});
+  }
+};
+$('#drawReject').onclick=()=>state.drawOffer&&action('draw-response',{team:state.drawOffer==='WHITE'?'BLACK':'WHITE',response:'reject'});
 $('#resign').onclick=async()=>{if(await confirmAction('¿Querés rendirte?','El equipo que tiene el turno abandona y su rival gana la partida.'))await action('resign');};
-document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b===button));$('#historyTab').hidden=button.dataset.tab!=='history';$('#benchTab').hidden=button.dataset.tab!=='bench';});
+$('#bankChooseBoard').onclick=()=>{$('#board').scrollIntoView?.({block:'center',behavior:motionAllowed()?'smooth':'instant'});toast('Elegí una pieza propia en el tablero. Después tocá su reemplazo en el banco a la izquierda de la cancha.');};
+document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>{if(button.dataset.tab==='bench'){$('#benchTab').scrollIntoView?.({block:'nearest',behavior:motionAllowed()?'smooth':'instant'});$('#bankTitle').focus?.();return;}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b===button));$('#historyTab').hidden=false;});
 $('#newForm').addEventListener('change',()=>{
   const form=$('#newForm'),mode=new FormData(form).get('mode');
   $('#nbaOptions').hidden=mode==='standard';$('#customOptions').hidden=mode!=='custom';
