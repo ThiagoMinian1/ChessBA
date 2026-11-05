@@ -1,6 +1,7 @@
 package ar.uade.tpo.chess.adapters.web;
 
 import ar.uade.tpo.chess.adapters.nba.*;
+import ar.uade.tpo.chess.adapters.ai.ChessAi;
 import ar.uade.tpo.chess.core.game.ChessGame;
 import ar.uade.tpo.chess.core.model.*;
 import com.sun.net.httpserver.HttpExchange;
@@ -25,6 +26,10 @@ public final class WebApp {
         String white = "Blancas", black = "Negras", mode = "standard";
         boolean started;
         Team drawOffer;
+        Team aiTeam;
+        ChessAi.Difficulty difficulty=ChessAi.Difficulty.MEDIUM;
+        boolean aiPaused;
+        Map<String,String> lastAiMove;
     }
 
     public WebApp(int port) throws IOException {
@@ -94,6 +99,9 @@ public final class WebApp {
                         if (parts.length == 2) params.put(decode(parts[0]), decode(parts[1]));
                     }
                 }
+                if(session.aiTeam!=null && session.game.currentTurn()==session.aiTeam
+                        && List.of("/api/move","/api/trade","/api/resign","/api/draw","/api/draw-offer").contains(path))
+                    throw new IllegalStateException("Es el turno de la IA.");
                 switch (path) {
                     case "/api/state" -> { }
                     case "/api/result" -> {
@@ -104,12 +112,25 @@ public final class WebApp {
                     }
                     case "/api/new" -> newGame(session, params);
                     case "/api/move" -> session.game.play(Position.of(params.get("from")), Position.of(params.get("to")), params.containsKey("promotion") ? PieceType.valueOf(params.get("promotion")) : null);
-                    case "/api/undo" -> session.game.undo();
-                    case "/api/redo" -> session.game.redo();
+                    case "/api/undo" -> { session.game.undo(); session.aiPaused=session.aiTeam!=null; }
+                    case "/api/redo" -> { session.game.redo(); session.aiPaused=session.aiTeam!=null; }
+                    case "/api/ai-resume" -> { session.aiPaused=false; }
+                    case "/api/ai-move" -> {
+                        if(session.aiTeam==null||session.game.currentTurn()!=session.aiTeam||session.aiPaused)throw new IllegalStateException("La IA no tiene el turno activo.");
+                        var choice=new ChessAi().choose(session.game,session.config,session.difficulty);
+                        choice.play(session.game);
+                        session.lastAiMove=choice.move()==null?null:Map.of("from",choice.move().from().toString(),"to",choice.move().to().toString());
+                    }
                     case "/api/resign" -> session.game.resign(session.game.currentTurn());
                     case "/api/draw", "/api/draw-offer" -> {
                         if (session.game.status().isOver() || session.drawOffer != null) throw new IllegalStateException("No se puede proponer tablas ahora.");
                         session.drawOffer = session.game.currentTurn();
+                        if(session.aiTeam!=null){
+                            // El rival acepta si no lleva una ventaja material clara; de lo contrario sigue jugando.
+                            int human=material(session.game,session.aiTeam.opposite()),computer=material(session.game,session.aiTeam);
+                            if(computer<=human)session.game.agreeDraw();
+                            session.drawOffer=null;
+                        }
                     }
                     case "/api/draw-response" -> {
                         if (session.drawOffer == null) throw new IllegalStateException("No hay una propuesta de tablas pendiente.");
@@ -125,6 +146,7 @@ public final class WebApp {
                     default -> { send(exchange, 404, "application/json", json(Map.of("error", "Ruta no encontrada"))); return; }
                 }
                 if (mutation && !path.equals("/api/draw") && !path.equals("/api/draw-offer") && !path.equals("/api/draw-response")) session.drawOffer = null;
+                if(path.equals("/api/move")||path.equals("/api/trade"))session.aiPaused=false;
                 if (mutation && !session.game.history().isEmpty()) session.started = true;
                 send(exchange, 200, "application/json", json(state(session)));
             }
@@ -152,6 +174,10 @@ public final class WebApp {
 
     private void newGame(Session s, Map<String, String> p) {
         String mode = p.getOrDefault("mode", "standard");
+        String opponent=p.getOrDefault("opponent","local");
+        if(!List.of("local","ai").contains(opponent))throw new IllegalArgumentException("Rival inválido.");
+        Team aiTeam=opponent.equals("ai")?Team.valueOf(p.getOrDefault("humanTeam","WHITE")).opposite():null;
+        ChessAi.Difficulty difficulty=ChessAi.Difficulty.valueOf(p.getOrDefault("difficulty","MEDIUM"));
         if (!List.of("standard", "nba", "custom", "theme").contains(mode)) throw new IllegalArgumentException("Modo inválido");
         int limit = mode.equals("standard") || mode.equals("theme") ? GameConfig.DEFAULT_SHOT_CLOCK_LIMIT : Integer.parseInt(p.getOrDefault("limit", "10"));
         if (limit < 1 || limit > 24) throw new IllegalArgumentException("El límite del shot clock debe estar entre 1 y 24.");
@@ -166,6 +192,7 @@ public final class WebApp {
         }
         s.game = NbaGameFactory.create(config); s.config = config; s.mode = mode; s.white = white; s.black = black;
         s.started = true;
+        s.aiTeam=aiTeam;s.difficulty=difficulty;s.aiPaused=false;s.lastAiMove=null;
     }
 
     private Map<String, Object> state(Session s) {
@@ -180,6 +207,11 @@ public final class WebApp {
         result.put("mode", s.mode); result.put("white", s.white); result.put("black", s.black);
         result.put("started", s.started);
         result.put("drawOffer", s.drawOffer == null ? "" : s.drawOffer.name());
+        result.put("opponent",s.aiTeam==null?"local":"ai");
+        result.put("aiTeam",s.aiTeam==null?"":s.aiTeam.name());
+        result.put("difficulty",s.difficulty.name());
+        result.put("aiPaused",s.aiPaused);
+        result.put("lastAiMove",s.lastAiMove);
         result.put("scoreboard", s.config.scoreboardEnabled());
         result.put("decidedOnPoints", ScoreboardGame.decidedOnPoints(g));
         result.put("result", gameResult(g, s.config.scoreboardEnabled(), s.white, s.black));
@@ -233,6 +265,12 @@ public final class WebApp {
             case DRAW_BY_AGREEMENT -> "tablas de común acuerdo";
             default -> status.name();
         };
+    }
+
+    private static int material(ChessGame game,Team side){
+        return game.board().pieces(side).stream().mapToInt(p->switch(p.piece().type()){
+            case PAWN->1;case KNIGHT,BISHOP->3;case ROOK->5;case QUEEN->9;case KING->0;
+        }).sum()+ScoreboardGame.scoreOf(game,side);
     }
 
     private static String decode(String value) { return URLDecoder.decode(value, StandardCharsets.UTF_8); }

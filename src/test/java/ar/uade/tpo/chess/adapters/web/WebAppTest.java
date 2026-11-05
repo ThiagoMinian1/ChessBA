@@ -162,6 +162,32 @@ class WebAppTest {
         assertTrue(post("redo", "").body().contains("DRAW_BY_AGREEMENT"));
     }
 
+    @Test void aiOpponentRespectsTurnsAndPausesForUndoRedo() throws Exception {
+        var fresh=post("new","mode=standard&opponent=ai&humanTeam=WHITE&difficulty=EASY");
+        assertEquals(200,fresh.statusCode());assertTrue(fresh.body().contains("\"aiTeam\":\"BLACK\""));
+        assertEquals(400,post("ai-move", "").statusCode());
+        moves("e2e4");String before=get("/api/state").body();
+        assertEquals(400,post("move","from=e7&to=e5").statusCode());assertEquals(before,get("/api/state").body());
+        var played=post("ai-move", "");assertEquals(200,played.statusCode(),played.body());
+        assertTrue(played.body().contains("\"turn\":\"WHITE\""));assertTrue(played.body().contains("\"lastAiMove\":{"));
+        assertTrue(post("undo", "").body().contains("\"aiPaused\":true"));
+        assertEquals(400,post("ai-move", "").statusCode());
+        post("ai-resume", "");assertEquals(200,post("ai-move", "").statusCode());
+        String stable=get("/api/state").body();
+        assertEquals(400,post("new","opponent=ai&difficulty=INVALID").statusCode());assertEquals(stable,get("/api/state").body());
+        String black=post("new","mode=theme&opponent=ai&humanTeam=BLACK&difficulty=MEDIUM").body();
+        assertTrue(black.contains("\"aiTeam\":\"WHITE\""));assertEquals(200,post("ai-move", "").statusCode());
+        assertTrue(get("/api/state").body().contains("\"turn\":\"BLACK\""));
+    }
+
+    @Test void aiCanPlayNbaAndReplyToADrawOffer() throws Exception {
+        post("new","mode=nba&opponent=ai&humanTeam=WHITE&difficulty=EASY&limit=1");
+        moves("g1f3");assertEquals(200,post("ai-move", "").statusCode());
+        post("new","mode=standard&opponent=ai&humanTeam=WHITE&difficulty=EASY");
+        assertTrue(post("draw-offer", "").body().contains("DRAW_BY_AGREEMENT"));
+        post("new","mode=standard&opponent=local");assertEquals(400,post("ai-move", "").statusCode());
+    }
+
     @Test void escapesJsonStrings() {
         assertEquals("\"a\\\"b\\\\c\\n\\t\\u0001\"", WebApp.json("a\"b\\c\n\t\u0001"));
     }

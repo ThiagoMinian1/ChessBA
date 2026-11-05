@@ -21,6 +21,8 @@ import java.util.Optional;
  */
 public abstract class GameDecorator implements ChessGame {
 
+    @Override public ChessGame copyForAnalysis() { return delegate.copyForAnalysis(); }
+
     protected final ChessGame delegate;
 
     protected GameDecorator(ChessGame delegate) {
