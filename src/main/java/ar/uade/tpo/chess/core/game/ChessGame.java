@@ -21,6 +21,9 @@ import java.util.Optional;
  */
 public interface ChessGame {
 
+    /** Copia aislada del estado base, sin observadores ni historial de deshacer. Conserva repetición y extensiones. */
+    ChessGame copyForAnalysis();
+
     Team currentTurn();
 
     /** Copia del tablero; modificarla no afecta la partida. */

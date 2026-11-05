@@ -39,6 +39,10 @@ public class Game implements ChessGame {
     private int cursor;
     private final List<GameObserver> observers = new ArrayList<>();
 
+    private Game(Game source) { this.state = source.state.copy(); }
+
+    @Override public ChessGame copyForAnalysis() { return new Game(this); }
+
     /** Crea una partida desde la posición inicial estándar. */
     public Game() {
         this(GameState.initial());

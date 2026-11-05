@@ -9,6 +9,21 @@ let jerseyPieces = true;
 try { jerseyPieces = localStorage.getItem('chessba-piece-style-v3') !== 'classic'; } catch { /* Preferencia opcional. */ }
 let availableFranchises = [];
 let currentView='home', setupReady=false;
+let aiTimer, aiError=false;
+function isAiTurn(){return state?.opponent==='ai'&&state.turn===state.aiTeam&&state.status==='ONGOING';}
+function scheduleAi(){
+  clearTimeout(aiTimer);
+  if(currentView!=='game'||busy||!isAiTurn()||state.aiPaused||aiError)return;
+  aiTimer=setTimeout(async()=>{if(currentView!=='game'||busy||!isAiTurn()||state.aiPaused)return;const ok=await action('ai-move');if(!ok){aiError=true;renderAiStatus();}},180);
+}
+function renderAiStatus(){
+  $('#aiStatus').hidden=state?.opponent!=='ai';
+  if(state?.opponent!=='ai')return;
+  const levels={EASY:'Fácil',MEDIUM:'Media',HARD:'Difícil'};
+  $('#aiStatusText').textContent=state.status!=='ONGOING'?`IA · ${levels[state.difficulty]}`:state.aiPaused?'IA en pausa para revisar las jugadas':aiError?'La IA no pudo responder. Podés reintentar.':isAiTurn()?'La IA está pensando…':`Tu turno · IA ${levels[state.difficulty]}`;
+  $('#aiResume').hidden=state.status!=='ONGOING'||(!state.aiPaused&&!aiError);
+  $('#aiResume').disabled=busy;
+}
 let crowdOn = false, crowdPreset = 'defense', crowdPlaying = false, crowdLastAt = 0, crowdEndTimer, crowdVoice = null, crowdNodes = [];
 try {crowdOn=localStorage.getItem('chessba-crowd')==='on';crowdPreset=localStorage.getItem('chessba-crowd-preset')||'defense';} catch { /* Preferencias opcionales. */ }
 const roles = {KING:['FP','Franchise Player'],QUEEN:['PG','Point Guard'],ROOK:['C','Center'],BISHOP:['SF','Small Forward'],KNIGHT:['SG','Shooting Guard'],PAWN:['RK','Rookie']};
@@ -54,15 +69,17 @@ function errorMessage(error) {
 }
 async function action(path, params = {}) {
   if (busy) return false;
+  let succeeded=false;
   busy = true;
   if(path !== 'move')stopCrowd();
   syncAvailability();
   $('#board').setAttribute('aria-busy','true');
   try {
     const before = state;
-    const origin = path === 'move' ? moveOrigins(params, before) : [];
+    let origin = path === 'move' ? moveOrigins(params, before) : [];
     state = await api(path, params); selected = null; connection(true); render();
-    if (path === 'move') {
+    if(path==='ai-move'&&state.lastAiMove){params=state.lastAiMove;origin=moveOrigins(params,before);}
+    if (path === 'move'||(path==='ai-move'&&state.lastAiMove)) {
       animateMove(origin);
       const feedback = classifyMove(before, state);
       playSound(feedback.capture ? 'capture' : 'move');
@@ -76,11 +93,12 @@ async function action(path, params = {}) {
       if (state.status !== 'ONGOING') stopCrowd();
       else if (crowdOn && (state.check || state.history.length % 6 === 0)) playCrowd();
     } else if (path === 'undo' || path === 'redo') playSound('navigate');
+    if(path==='draw-offer'&&before.opponent==='ai'&&state.status==='ONGOING')toast('La IA prefiere seguir jugando.');
     if (state.result && currentView==='game') showView('result');
-    return true;
+    succeeded=true;return true;
   }
   catch (e) { toast(errorMessage(e)); return false; }
-  finally { busy = false; $('#board').setAttribute('aria-busy','false'); syncAvailability(); }
+  finally { busy = false; $('#board').setAttribute('aria-busy','false'); syncAvailability();if(succeeded)scheduleAi(); }
 }
 function syncAvailability() {
   const unavailable = busy || !state;
@@ -92,9 +110,10 @@ function syncAvailability() {
   $('#jerseyToggle').disabled = unavailable;
   $('#undo').disabled = unavailable || !state?.canUndo;
   $('#redo').disabled = unavailable || !state?.canRedo;
-  $('#draw').disabled = unavailable || state?.status !== 'ONGOING' || Boolean(state?.drawOffer);
+  $('#draw').disabled = unavailable || isAiTurn() || state?.status !== 'ONGOING' || Boolean(state?.drawOffer);
   $('#drawAccept').disabled=unavailable;$('#drawReject').disabled=unavailable;
-  $('#resign').disabled = unavailable || state?.status !== 'ONGOING';
+  $('#resign').disabled = unavailable || isAiTurn() || state?.status !== 'ONGOING';
+  if(state)renderAiStatus();
 }
 // Compara las piezas reales del tablero para incluir capturas al paso y de piezas promocionadas.
 function classifyMove(before, after) {
@@ -249,7 +268,7 @@ function render() {
   $('#scoreboardCapture').hidden=true;
   clearPlayEffects();
   document.body.dataset.mode = state.mode;
-  $('#arenaBadge').textContent = state.status === 'ONGOING' ? 'PARTIDA LOCAL' : 'PARTIDA FINALIZADA';
+  $('#arenaBadge').textContent = state.status === 'ONGOING' ? state.opponent==='ai'?'CONTRA LA COMPUTADORA':'PARTIDA LOCAL' : 'PARTIDA FINALIZADA';
   $('#matchAction').textContent = state.history.length ? `JUGADA ${String(state.history.length).padStart(2,'0')}` : 'A JUGAR';
   $('#jerseyToggle').hidden = state.mode === 'standard';
   $('#jerseyToggle').setAttribute('aria-pressed',String(jerseyPieces));
@@ -274,6 +293,7 @@ function render() {
     info.append(text('small',label.city),text('strong',label.name));
     const turn = text('span',state.status === 'ONGOING' && state.turn === key.toUpperCase() ? 'EN TURNO' : key === 'white' ? 'BLANCAS' : 'NEGRAS','possession');
     info.append(turn);
+    if(state.opponent==='ai')info.append(text('small',state.aiTeam===key.toUpperCase()?'COMPUTADORA':'VOS','player-owner'));
     team.replaceChildren(teamMark(code),info);
     team.title = state[key];
   }
@@ -326,7 +346,7 @@ function showView(view, focus = true) {
   currentView=view;
   for(const name of ['home','game','result'])$('#'+name+'Screen').hidden=name!==view;
   document.body.dataset.view=view;
-  if(view!=='game')stopCrowd();
+  if(view!=='game'){stopCrowd();clearTimeout(aiTimer);}else scheduleAi();
   if(focus){const heading=view==='home'?$('#homeTitle'):view==='result'?$('#resultTitle'):$('#gameScreen').querySelector('h1');heading?.setAttribute('tabindex','-1');heading?.focus?.({preventScroll:true});window.scrollTo?.({top:0,behavior:'instant'});}
 }
 function renderHome() {
@@ -399,7 +419,7 @@ function renderBoard() {
     el.setAttribute('aria-pressed', String(square === selected));
     if (col === 0) el.append(text('span', rank+1, 'coord rank'));
     if (row === 7) el.append(text('span', String.fromCharCode(97+file),'coord file'));
-    if (piece) { const p = pieceElement(piece); p.draggable = piece.team === state.turn; p.addEventListener('dragstart', event => { if (busy) {event.preventDefault();return;} selected=square; event.dataTransfer.setData('text/plain',square); event.dataTransfer.effectAllowed='move'; updateHint(); }); el.append(p); }
+    if (piece) { const p = pieceElement(piece); p.draggable = piece.team === state.turn && !isAiTurn(); p.addEventListener('dragstart', event => { if (busy || isAiTurn()) {event.preventDefault();return;} selected=square; event.dataTransfer.setData('text/plain',square); event.dataTransfer.effectAllowed='move'; updateHint(); }); el.append(p); }
     if (targets.some(m=>m.to === square)) el.append(text('span','',''+(piece?'legal-ring':'legal-dot')));
     el.addEventListener('focus',()=>{focusedSquare=square;});
     el.addEventListener('click',()=>{focusedSquare=square;chooseSquare(square);});
@@ -441,7 +461,7 @@ function updateHint() {
   $('#learnIcon').replaceChildren(pieceElement(piece || {type:'KNIGHT',team:'WHITE'}));
 }
 async function chooseSquare(square) {
-  if (busy || state.status !== 'ONGOING') return;
+  if (busy || isAiTurn() || state.status !== 'ONGOING') return;
   unlockSound();
   const candidates = state.legalMoves.filter(m=>m.from === selected && m.to === square);
   if (selected && candidates.length) {
@@ -478,7 +498,7 @@ function renderBench() {
       const own = state.turn === key.toUpperCase();
       const chosen = state.board.find(p=>p.square===selected);
       const invalidPawnRank=type==='PAWN'&&/[18]$/.test(selected||'');
-      button.disabled = !state.trade || !own || !chosen || chosen.team!==state.turn || chosen.type === 'KING' || invalidPawnRank || state[key+'Traded'] || state.check || state.status !== 'ONGOING';
+      button.disabled = isAiTurn() || !state.trade || !own || !chosen || chosen.team!==state.turn || chosen.type === 'KING' || invalidPawnRank || state[key+'Traded'] || state.check || state.status !== 'ONGOING';
       if(invalidPawnRank)button.title='Un peón no puede entrar en la primera ni en la última fila.';
       button.onclick=async()=>{if(busy)return;const square=selected;if(await confirmAction('¿Cambio de estrategia?',`Reemplazar la pieza en ${square} por ${names[type].toLowerCase()}. El intercambio consume tu turno.`)){await action('trade',{square,piece:type});}};
       pieces.append(button);
@@ -564,6 +584,9 @@ function playSound(kind='move',delay=0){
 function openNewGame(mode = ['custom','theme'].includes(state?.mode) ? state.mode : 'nba') {
   if (busy || !state || !setupReady) return;
   const form = $('#newForm');
+  form.querySelector('[name=opponent]').value=state.opponent||'local';
+  form.querySelector('[name=difficulty]').value=state.difficulty||'MEDIUM';
+  form.querySelector('[name=humanTeam]').value=state.aiTeam==='WHITE'?'BLACK':'WHITE';
   form.querySelector(`[name=mode][value=${mode}]`).checked = true;
   for (const [name,value] of [['shotClock',state.shotClock],['trade',state.trade],['hotHand',state.hotHand],['scoreboard',state.scoreboard]]) form.querySelector(`[name=${name}]`).checked = Boolean(value);
   form.querySelector('[name=limit]').value = Math.max(1,Math.min(24,state.limit || 10));
@@ -669,6 +692,7 @@ $('#crowdToggle').onclick=()=>{
 $('#crowdTest').onclick=()=>{unlockSound();audio?.resume().then(()=>playCrowd(true)).catch(()=>{});};
 $('#crowdPreset').onchange=()=>{crowdPreset=$('#crowdPreset').value;stopCrowd();try{localStorage.setItem('chessba-crowd-preset',crowdPreset);}catch{/* Preferencia opcional. */}};
 $('#undo').onclick=()=>action('undo');$('#redo').onclick=()=>action('redo');
+$('#aiResume').onclick=async()=>{aiError=false;if(await action('ai-resume'))scheduleAi();};
 $('#draw').onclick=async()=>{const team=state[state.turn==='WHITE'?'white':'black'];if(await confirmAction(`${team}: ¿proponer tablas?`,'Esta es tu confirmación. Después el rival debe aceptar; la partida todavía no termina.'))await action('draw-offer');};
 $('#drawAccept').onclick=async()=>{
   if(!state.drawOffer||busy)return;
@@ -683,6 +707,7 @@ $('#bankChooseBoard').onclick=()=>{$('#board').scrollIntoView?.({block:'center',
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>{if(button.dataset.tab==='bench'){$('#benchTab').scrollIntoView?.({block:'nearest',behavior:motionAllowed()?'smooth':'instant'});$('#bankTitle').focus?.();return;}document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b===button));$('#historyTab').hidden=false;});
 $('#newForm').addEventListener('change',()=>{
   const form=$('#newForm'),mode=new FormData(form).get('mode');
+  $('#aiOptions').hidden=form.querySelector('[name=opponent]').value!=='ai';
   $('#nbaOptions').hidden=mode==='standard';$('#customOptions').hidden=mode!=='custom';
   const limit=form.querySelector('[name=limit]');
   limit.disabled=mode==='standard'||mode==='theme'||(mode==='custom'&&!form.querySelector('[name=shotClock]').checked);
@@ -696,9 +721,9 @@ $('#newForm').onsubmit=async event=>{
   const form=new FormData(event.target), params=Object.fromEntries(form.entries());
   for(const flag of ['shotClock','trade','hotHand','scoreboard'])params[flag]=String(form.has(flag));
   const button=event.target.querySelector('[type=submit]');button.disabled=true;
-  try {busy=true;syncAvailability();state=await api('new',params);selected=null;flipped=false;render();connection(true);$('#newDialog').close();showView('game');playSound('start');toast('Nueva partida. ¡A jugar!');}
+  try {busy=true;syncAvailability();state=await api('new',params);aiError=false;selected=null;flipped=state.opponent==='ai'&&state.aiTeam==='WHITE';render();connection(true);$('#newDialog').close();showView('game');playSound('start');toast('Nueva partida. ¡A jugar!');}
   catch(error){$('#newError').textContent=errorMessage(error);}
-  finally{busy=false;button.disabled=false;syncAvailability();}
+  finally{busy=false;button.disabled=false;syncAvailability();scheduleAi();}
 };
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCrowd();});
 async function init() {
@@ -710,7 +735,7 @@ async function init() {
   try {
     state=await api('state');
     if(typeof state.scoreboard!=='boolean'||!('result' in state))throw new Error('La aplicación se actualizó. Reiniciá el servidor Java y volvé a abrir la página.');
-    connection(true);render();
+    connection(true);flipped=state.opponent==='ai'&&state.aiTeam==='WHITE';render();
     const franchises=await api('franchises');availableFranchises=franchises;
     for(const key of ['white','black']) { const select=$(`#${key}Franchise`);franchises.forEach(f=>{const option=text('option',f.name);option.value=f.code;select.append(option);});select.value=key==='white'?'LAL':'BOS'; }
     initializeTeamPickers();updateTeamPreview();setupReady=true;syncAvailability();
