@@ -14,13 +14,15 @@ function isAiTurn(){return state?.opponent==='ai'&&state.turn===state.aiTeam&&st
 function scheduleAi(){
   clearTimeout(aiTimer);
   if(currentView!=='game'||busy||!isAiTurn()||state.aiPaused||aiError)return;
-  aiTimer=setTimeout(async()=>{if(currentView!=='game'||busy||!isAiTurn()||state.aiPaused)return;const ok=await action('ai-move');if(!ok){aiError=true;renderAiStatus();}},180);
+  aiTimer=setTimeout(async()=>{if(currentView!=='game'||busy||!isAiTurn()||state.aiPaused||aiError)return;const ok=await action('ai-move');if(!ok){aiError=true;renderAiStatus();}},1600);
 }
 function renderAiStatus(){
   $('#aiStatus').hidden=state?.opponent!=='ai';
   if(state?.opponent!=='ai')return;
   const levels={EASY:'Fácil',MEDIUM:'Media',HARD:'Difícil'};
   $('#aiStatusText').textContent=state.status!=='ONGOING'?`IA · ${levels[state.difficulty]}`:state.aiPaused?'IA en pausa para revisar las jugadas':aiError?'La IA no pudo responder. Podés reintentar.':isAiTurn()?'La IA está pensando…':`Tu turno · IA ${levels[state.difficulty]}`;
+  $('#aiLastMove').hidden=!state.lastAiMove;
+  if(state.lastAiMove)$('#aiLastMove').textContent=`Última de la IA: ${state.lastAiMove.from} → ${state.lastAiMove.to}`;
   $('#aiResume').hidden=state.status!=='ONGOING'||(!state.aiPaused&&!aiError);
   $('#aiResume').disabled=busy;
 }
@@ -80,7 +82,7 @@ async function action(path, params = {}) {
     state = await api(path, params); selected = null; connection(true); render();
     if(path==='ai-move'&&state.lastAiMove){params=state.lastAiMove;origin=moveOrigins(params,before);}
     if (path === 'move'||(path==='ai-move'&&state.lastAiMove)) {
-      animateMove(origin);
+      animateMove(origin,path==='ai-move'?650:220);
       const feedback = classifyMove(before, state);
       playSound(feedback.capture ? 'capture' : 'move');
       if (feedback.capture) {
@@ -110,7 +112,13 @@ function syncAvailability() {
   $('#jerseyToggle').disabled = unavailable;
   $('#undo').disabled = unavailable || !state?.canUndo;
   $('#redo').disabled = unavailable || !state?.canRedo;
-  $('#draw').disabled = unavailable || isAiTurn() || state?.status !== 'ONGOING' || Boolean(state?.drawOffer);
+  for(const [id,label] of [['undo','Deshacer mi jugada'],['redo','Rehacer mi jugada']]){
+    const button=$('#'+id),caption=button.querySelector('span');
+    if(caption)caption.textContent=state?.opponent==='ai'?label:id==='undo'?'Deshacer':'Rehacer';
+    button.title=state?.opponent==='ai'?'Tu jugada y las respuestas de la IA se revisan juntas.':id==='undo'?'Deshacer última acción':'Rehacer acción';
+  }
+  $('#draw').disabled = unavailable || isAiTurn() || !state?.canOfferDraw;
+  $('#draw').title=state?.canOfferDraw?'Podés proponer tablas aunque los puntos sean diferentes. El rival debe aceptar.':'Ambos equipos deben haber jugado al menos una vez. Solo una propuesta pendiente.';
   $('#drawAccept').disabled=unavailable;$('#drawReject').disabled=unavailable;
   $('#resign').disabled = unavailable || isAiTurn() || state?.status !== 'ONGOING';
   if(state)renderAiStatus();
@@ -156,7 +164,7 @@ function moveOrigins(params, before) {
   }
   return routes.map(([from,to])=>({to,rect:$('#board').querySelector(`[data-square="${from}"] .piece`)?.getBoundingClientRect()}));
 }
-function animateMove(origins) {
+function animateMove(origins,duration=220) {
   if (!motionAllowed()) return;
   for (const {to,rect} of origins) {
     const piece=$('#board').querySelector(`[data-square="${to}"] .piece`);
@@ -165,7 +173,7 @@ function animateMove(origins) {
     runningAnimations.push(piece.animate([
       {transform:`translate(${rect.left-end.left}px, ${rect.top-end.top}px) scale(1.04)`},
       {transform:'translate(0,0) scale(1)'}
-    ],{duration:220,easing:'cubic-bezier(.2,.75,.25,1)'}));
+    ],{duration,easing:'cubic-bezier(.2,.75,.25,1)'}));
   }
 }
 function showMoveMoment(before, params, feedback) {
@@ -361,6 +369,7 @@ function renderResult() {
   if(!result)return;
   $('#resultTitle').textContent=result.winnerName?`Ganó ${result.winnerName}`:'La partida terminó en tablas';
   $('#resultReason').textContent=result.reason;
+  $('#resultUndo').textContent=state.opponent==='ai'?'Deshacer mi última jugada':'Deshacer última acción';
   $('#resultOutcome').textContent=result.outcome;
   for(const key of ['white','black']) {
     const name=key==='white'?'White':'Black',team=$('#result'+name);
@@ -646,6 +655,23 @@ function updateTeamPreview() {
 function closeTeamMenus() {
   for (const key of ['white','black']) {$(`#${key}Menu`).hidden=true;$(`#${key}Picker`).setAttribute('aria-expanded','false');}
 }
+function randomizeTeam(key){
+  const other=$(`#${key==='white'?'black':'white'}Franchise`).value;
+  const options=availableFranchises.filter(team=>team.code!==other);
+  if(!options.length)return;
+  const chosen=options[Math.floor(Math.random()*options.length)];
+  $(`#${key}Franchise`).value=chosen.code;
+  closeTeamMenus();updateTeamPreview();$('#newError').textContent='';
+  $('#randomTeamMessage').textContent=`${key==='white'?'Local':'Visitante'}: ${chosen.name}`;
+}
+$('#randomWhite').onclick=()=>randomizeTeam('white');
+$('#randomBlack').onclick=()=>randomizeTeam('black');
+$('#randomBoth').onclick=()=>{
+  if(availableFranchises.length<2)return;
+  $('#whiteFranchise').value=availableFranchises[Math.floor(Math.random()*availableFranchises.length)].code;
+  randomizeTeam('black');
+  $('#randomTeamMessage').textContent=`Equipos sorteados: ${$('#whiteFranchise').selectedOptions[0].textContent} contra ${$('#blackFranchise').selectedOptions[0].textContent}`;
+};
 function initializeTeamPickers() {
   for (const key of ['white','black']) {
     const list=$(`#${key}Options`),search=$(`#${key}Search`),trigger=$(`#${key}Picker`),menu=$(`#${key}Menu`);

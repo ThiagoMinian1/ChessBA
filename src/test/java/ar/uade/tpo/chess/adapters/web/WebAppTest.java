@@ -33,6 +33,7 @@ class WebAppTest {
     }
 
     private HttpResponse<String> agreeDraw() throws Exception {
+        if(get("/api/state").body().contains("\"canOfferDraw\":false"))moves("e2e4","e7e5");
         String state = post("draw-offer", "").body();
         String rival = state.contains("\"drawOffer\":\"WHITE\"") ? "BLACK" : "WHITE";
         return post("draw-response", "team=" + rival + "&response=accept");
@@ -144,6 +145,9 @@ class WebAppTest {
     }
 
     @Test void drawOfferRequiresRivalAcceptanceAndCanBeRejectedOrCancelledByMove() throws Exception {
+        assertEquals(400,post("draw-offer", "").statusCode());
+        moves("e2e4");assertEquals(400,post("draw-offer", "").statusCode());
+        moves("e7e5");
         String offered=post("draw-offer", "").body();
         assertTrue(offered.contains("\"drawOffer\":\"WHITE\""));
         assertTrue(offered.contains("\"status\":\"ONGOING\""));
@@ -152,7 +156,7 @@ class WebAppTest {
         assertTrue(post("draw-response","team=BLACK&response=reject").body().contains("\"drawOffer\":\"\""));
         assertTrue(get("/api/state").body().contains("\"status\":\"ONGOING\""));
         post("draw-offer", "");
-        assertTrue(moves("e2e4").contains("\"drawOffer\":\"\""));
+        assertTrue(moves("g1f3").contains("\"drawOffer\":\"\""));
         assertEquals(400,post("draw-response","team=BLACK&response=accept").statusCode());
         post("draw-offer", "");
         String accepted=post("draw-response","team=WHITE&response=accept").body();
@@ -170,20 +174,29 @@ class WebAppTest {
         assertEquals(400,post("move","from=e7&to=e5").statusCode());assertEquals(before,get("/api/state").body());
         var played=post("ai-move", "");assertEquals(200,played.statusCode(),played.body());
         assertTrue(played.body().contains("\"turn\":\"WHITE\""));assertTrue(played.body().contains("\"lastAiMove\":{"));
-        assertTrue(post("undo", "").body().contains("\"aiPaused\":true"));
+        String undone=post("undo", "").body();
+        assertTrue(undone.contains("\"aiPaused\":true"));
+        assertTrue(undone.contains("\"history\":[]"));
+        assertTrue(undone.contains("\"canUndo\":false"));
         assertEquals(400,post("ai-move", "").statusCode());
-        post("ai-resume", "");assertEquals(200,post("ai-move", "").statusCode());
+        String redone=post("redo", "").body();
+        assertTrue(redone.contains("\"turn\":\"WHITE\""));
+        assertTrue(redone.contains("\"aiPaused\":true"));
+        post("undo", "");moves("d2d4");assertEquals(200,post("ai-move", "").statusCode());
         String stable=get("/api/state").body();
         assertEquals(400,post("new","opponent=ai&difficulty=INVALID").statusCode());assertEquals(stable,get("/api/state").body());
         String black=post("new","mode=theme&opponent=ai&humanTeam=BLACK&difficulty=MEDIUM").body();
         assertTrue(black.contains("\"aiTeam\":\"WHITE\""));assertEquals(200,post("ai-move", "").statusCode());
         assertTrue(get("/api/state").body().contains("\"turn\":\"BLACK\""));
+        assertTrue(get("/api/state").body().contains("\"canUndo\":false"));
+        assertEquals(400,post("undo", "").statusCode());
     }
 
     @Test void aiCanPlayNbaAndReplyToADrawOffer() throws Exception {
         post("new","mode=nba&opponent=ai&humanTeam=WHITE&difficulty=EASY&limit=1");
         moves("g1f3");assertEquals(200,post("ai-move", "").statusCode());
         post("new","mode=standard&opponent=ai&humanTeam=WHITE&difficulty=EASY");
+        moves("e2e4");assertEquals(200,post("ai-move", "").statusCode());
         assertTrue(post("draw-offer", "").body().contains("DRAW_BY_AGREEMENT"));
         post("new","mode=standard&opponent=local");assertEquals(400,post("ai-move", "").statusCode());
     }
