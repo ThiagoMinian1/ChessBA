@@ -10,7 +10,7 @@ Es un rival local de ajedrez, sin modelos de lenguaje, cuentas, claves ni conexi
 
 El motor Java sigue validando cada acción, incluyendo promoción, enroque, captura al paso, intercambios, puntos y turnos extra. La IA analiza sobre una copia independiente que conserva repetición, en passant, derechos de enroque y extensiones NBA, sin tocar el historial real ni sus observadores.
 
-Deshacer y rehacer pausan la respuesta automática. **Continuar contra IA** retoma la partida; jugar una nueva acción propia también la retoma. Al elegir negras, la IA empieza con blancas y el tablero se gira para vos. Si falla la conexión, aparece un botón de reintento y no se insiste automáticamente.
+Contra la IA, deshacer vuelve hasta antes de tu última acción y retira juntas las respuestas posteriores de la computadora. No permite deshacer solo una respuesta de la IA ni su apertura si todavía no jugaste. Rehacer restaura el mismo grupo. Ambas acciones pausan la respuesta automática. **Continuar contra IA** retoma la partida; jugar una nueva acción propia también la retoma. Al elegir negras, la IA empieza con blancas y el tablero se gira para vos. Si falla la conexión, aparece un botón de reintento y no se insiste automáticamente.
 
 Contra la computadora, una propuesta de tablas recibe una respuesta automática: el rival acepta si no lleva ventaja material y de puntos; en caso contrario, continúa jugando. En modo local se conservan las confirmaciones de ambos jugadores.
 
@@ -23,3 +23,5 @@ Contra la computadora, una propuesta de tablas recibe una respuesta automática:
 La respuesta de estado agrega `opponent`, `aiTeam`, `difficulty`, `aiPaused` y `lastAiMove`. El servidor rechaza acciones humanas durante el turno de la IA.
 
 Validación: pruebas de legalidad en los tres niveles, mate en una, análisis sin alterar historial/rehacer, copia con repetición y reglas NBA, controles HTTP de turno/configuración/pausa, y recorrido del JavaScript real con DOM simulado contra un servidor HTTP.
+
+La interfaz espera 1,6 segundos antes de cada acción automática, incluidos los turnos extra NBA. El desplazamiento de las piezas de la IA dura 650 ms y el panel indica origen y destino de su última jugada.

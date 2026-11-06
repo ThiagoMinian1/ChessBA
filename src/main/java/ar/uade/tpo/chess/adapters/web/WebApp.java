@@ -30,6 +30,8 @@ public final class WebApp {
         ChessAi.Difficulty difficulty=ChessAi.Difficulty.MEDIUM;
         boolean aiPaused;
         Map<String,String> lastAiMove;
+        final List<Team> actors=new ArrayList<>();
+        final Deque<Integer> redoTurns=new ArrayDeque<>();
     }
 
     public WebApp(int port) throws IOException {
@@ -99,6 +101,8 @@ public final class WebApp {
                         if (parts.length == 2) params.put(decode(parts[0]), decode(parts[1]));
                     }
                 }
+                int previousSize=session.game.history().size();
+                Team actor=session.game.currentTurn();
                 if(session.aiTeam!=null && session.game.currentTurn()==session.aiTeam
                         && List.of("/api/move","/api/trade","/api/resign","/api/draw","/api/draw-offer").contains(path))
                     throw new IllegalStateException("Es el turno de la IA.");
@@ -112,8 +116,27 @@ public final class WebApp {
                     }
                     case "/api/new" -> newGame(session, params);
                     case "/api/move" -> session.game.play(Position.of(params.get("from")), Position.of(params.get("to")), params.containsKey("promotion") ? PieceType.valueOf(params.get("promotion")) : null);
-                    case "/api/undo" -> { session.game.undo(); session.aiPaused=session.aiTeam!=null; }
-                    case "/api/redo" -> { session.game.redo(); session.aiPaused=session.aiTeam!=null; }
+                    case "/api/undo" -> {
+                        if(session.aiTeam==null)session.game.undo();
+                        else {
+                            int own=lastHumanAction(session);
+                            if(own<0)throw new IllegalStateException("Todavía no hay una jugada tuya para deshacer.");
+                            session.redoTurns.push(previousSize);
+                            while(session.game.history().size()>own)session.game.undo();
+                            session.lastAiMove=null;
+                        }
+                        session.aiPaused=session.aiTeam!=null;
+                    }
+                    case "/api/redo" -> {
+                        if(session.aiTeam==null)session.game.redo();
+                        else {
+                            if(session.redoTurns.isEmpty())throw new IllegalStateException("No hay una jugada tuya para rehacer.");
+                            int target=session.redoTurns.pop();
+                            while(session.game.history().size()<target&&session.game.canRedo())session.game.redo();
+                            session.lastAiMove=null;
+                        }
+                        session.aiPaused=session.aiTeam!=null;
+                    }
                     case "/api/ai-resume" -> { session.aiPaused=false; }
                     case "/api/ai-move" -> {
                         if(session.aiTeam==null||session.game.currentTurn()!=session.aiTeam||session.aiPaused)throw new IllegalStateException("La IA no tiene el turno activo.");
@@ -123,7 +146,7 @@ public final class WebApp {
                     }
                     case "/api/resign" -> session.game.resign(session.game.currentTurn());
                     case "/api/draw", "/api/draw-offer" -> {
-                        if (session.game.status().isOver() || session.drawOffer != null) throw new IllegalStateException("No se puede proponer tablas ahora.");
+                        if (!canOfferDraw(session)) throw new IllegalStateException("Para proponer tablas, ambos equipos deben haber jugado al menos una vez y no debe haber una propuesta pendiente.");
                         session.drawOffer = session.game.currentTurn();
                         if(session.aiTeam!=null){
                             // El rival acepta si no lleva una ventaja material clara; de lo contrario sigue jugando.
@@ -144,6 +167,11 @@ public final class WebApp {
                         session.game.execute(new TradeAction(Position.of(params.get("square")), PieceType.valueOf(params.get("piece"))));
                     }
                     default -> { send(exchange, 404, "application/json", json(Map.of("error", "Ruta no encontrada"))); return; }
+                }
+                if(mutation&&!List.of("/api/new","/api/undo","/api/redo").contains(path)&&session.game.history().size()>previousSize){
+                    while(session.actors.size()>previousSize)session.actors.removeLast();
+                    while(session.actors.size()<session.game.history().size())session.actors.add(actor);
+                    session.redoTurns.clear();
                 }
                 if (mutation && !path.equals("/api/draw") && !path.equals("/api/draw-offer") && !path.equals("/api/draw-response")) session.drawOffer = null;
                 if(path.equals("/api/move")||path.equals("/api/trade"))session.aiPaused=false;
@@ -193,6 +221,7 @@ public final class WebApp {
         s.game = NbaGameFactory.create(config); s.config = config; s.mode = mode; s.white = white; s.black = black;
         s.started = true;
         s.aiTeam=aiTeam;s.difficulty=difficulty;s.aiPaused=false;s.lastAiMove=null;
+        s.actors.clear();s.redoTurns.clear();
     }
 
     private Map<String, Object> state(Session s) {
@@ -202,11 +231,12 @@ public final class WebApp {
         result.put("legalMoves", g.legalMoves().stream().map(m -> Map.of("from", m.from().toString(), "to", m.to().toString(), "promotion", m.promotion() == null ? "" : m.promotion().name())).toList());
         result.put("turn", g.currentTurn().name()); result.put("status", g.status().name());
         result.put("winner", g.winner().map(Enum::name).orElse("")); result.put("check", !g.status().isOver() && g.isInCheck());
-        result.put("history", g.history()); result.put("canUndo", g.canUndo()); result.put("canRedo", g.canRedo());
+        result.put("history", g.history()); result.put("canUndo", s.aiTeam==null?g.canUndo():lastHumanAction(s)>=0); result.put("canRedo", s.aiTeam==null?g.canRedo():!s.redoTurns.isEmpty());
         result.put("halfmoveClock", g.halfmoveClock());
         result.put("mode", s.mode); result.put("white", s.white); result.put("black", s.black);
         result.put("started", s.started);
         result.put("drawOffer", s.drawOffer == null ? "" : s.drawOffer.name());
+        result.put("canOfferDraw", canOfferDraw(s));
         result.put("opponent",s.aiTeam==null?"local":"ai");
         result.put("aiTeam",s.aiTeam==null?"":s.aiTeam.name());
         result.put("difficulty",s.difficulty.name());
@@ -265,6 +295,17 @@ public final class WebApp {
             case DRAW_BY_AGREEMENT -> "tablas de común acuerdo";
             default -> status.name();
         };
+    }
+
+    private static boolean canOfferDraw(Session session){
+        List<Team> applied=session.actors.subList(0,Math.min(session.actors.size(),session.game.history().size()));
+        return !session.game.status().isOver()&&session.drawOffer==null&&applied.contains(Team.WHITE)&&applied.contains(Team.BLACK);
+    }
+
+    private static int lastHumanAction(Session session){
+        for(int i=Math.min(session.game.history().size(),session.actors.size())-1;i>=0;i--)
+            if(session.actors.get(i)!=session.aiTeam)return i;
+        return -1;
     }
 
     private static int material(ChessGame game,Team side){
